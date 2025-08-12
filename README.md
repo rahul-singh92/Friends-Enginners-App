@@ -50,7 +50,7 @@ An Android app (Java/XML) designed to manage worker data, authentication, schedu
 
 ```markdown
 ### Login Page
-![Login Page](screenshots/login.png)
+![Login Page](screenshots/login.jpg)
 
 ### Admin Dashboard
 ![Admin Dashboard](screenshots/admin_dashboard.jpg)
