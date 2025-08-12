@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bottom_sheet_bg"
+    android:orientation="vertical"
+    android:clipToOutline="true"
+    android:elevation="12dp"
+    android:padding="24dp">
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload PDF File"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="10dp"/>
+
+    <!-- Select PDF File Button -->
+    <Button
+        android:id="@+id/btn_select_file"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:text="📂 Select PDF File"
+        android:background="@drawable/button_bg"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- Spinner Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Option"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:paddingBottom="6dp"/>
+
+    <!-- Spinner -->
+    <Spinner
+        android:id="@+id/spinner_options"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/spinner_bg"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:entries="@array/branch_array"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- Starting Date Picker Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Starting Date"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:paddingBottom="6dp"/>
+
+    <!-- Starting Date Picker Button -->
+    <Button
+        android:id="@+id/btn_select_start_date"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="📅 Pick Starting Date"
+        android:background="@drawable/spinner_bg"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Ending Date Picker Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Ending Date"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:paddingBottom="6dp"/>
+
+    <!-- Ending Date Picker Button -->
+    <Button
+        android:id="@+id/btn_select_end_date"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="📅 Pick Ending Date"
+        android:background="@drawable/spinner_bg"
+        android:textColor="@color/black"
+        android:textSize="16sp"/>
+
+    <!-- Submit Button -->
+    <Button
+        android:id="@+id/btn_submit"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:text="✔ Submit"
+        android:background="@drawable/button_bg_secondary"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="25dp"/>
+</LinearLayout>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="0.45"
+    android:background="@drawable/bottom_sheet_bg"
+    android:orientation="vertical"
+    android:clipToOutline="true"
+    android:elevation="12dp"
+    android:padding="24dp">
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload Excel File"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_gravity="center_horizontal"
+        android:paddingBottom="10dp"/>
+
+    <!-- Select Excel File Button -->
+    <Button
+        android:id="@+id/btn_select_file"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:text="📂 Select Excel File"
+        android:background="@drawable/button_bg"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- Sheet Type Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Sheet Type"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:paddingBottom="6dp"
+        android:paddingTop="10dp"/>
+
+    <!-- Sheet Type Spinner -->
+    <Spinner
+        android:id="@+id/spinner_sheet_type"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/spinner_bg"
+        android:popupBackground="@drawable/spinner_dropdown_background"
+        android:padding="8dp"
+        android:entries="@array/sheet_type_array"/>
+
+    <!-- Select Year Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Year"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:paddingBottom="6dp"/>
+
+    <!-- Year Spinner -->
+    <Spinner
+        android:id="@+id/spinner_year"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/spinner_bg"
+        android:popupBackground="@drawable/spinner_dropdown_background"
+        android:entries="@array/years_array"
+        android:padding="8dp"/>
+    <!-- Sheet Type Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Month"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:paddingBottom="6dp"
+        android:paddingTop="10dp"/>
+
+    <!-- Sheet Type Spinner -->
+    <Spinner
+        android:id="@+id/spinner_month"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/spinner_bg"
+        android:popupBackground="@drawable/spinner_dropdown_background"
+        android:padding="8dp"
+        android:entries="@array/sheet_month"/>
+
+    <!-- Submit Button -->
+    <Button
+        android:id="@+id/btn_submit"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:text="✔ Submit"
+        android:background="@drawable/button_bg_secondary"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="25dp"/>
+</LinearLayout>

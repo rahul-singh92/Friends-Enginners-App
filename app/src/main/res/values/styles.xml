@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CustomTabLayout" parent="Widget.Design.TabLayout">
+        <item name="tabIndicatorColor">#1565C0</item>  <!-- Dark Blue underline -->
+        <item name="tabSelectedTextColor">#1565C0</item> <!-- Selected text color -->
+        <item name="tabTextColor">@color/tab_text_selector</item> <!-- Unselected and selected -->
+    </style>
+    <style name="TextStyle">
+        <item name="android:textSize">18sp</item>
+        <item name="android:layout_marginTop">8dp</item>
+    </style>
+</resources>

@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Toolbar -->
+
+    <!-- Title Text -->
+    <include
+        layout="@layout/admin_toolbar"
+        app:layout_constraintBottom_toTopOf="@+id/admin_text"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="7dp" />
+
+    <!-- Left Button -->
+
+    <TextView
+        android:id="@+id/admin_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="Main Menu"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/admin_toolbar" />
+
+    <!-- Right Button -->
+
+    <Button
+        android:id="@+id/admin_button"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_corners_right"
+        android:backgroundTint="#12a3da"
+        android:gravity="center"
+        android:text="Upload Excel Sheet"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@id/admin_button2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/admin_text"
+        app:layout_constraintWidth_percent="0.48" />
+
+    <Button
+        android:id="@+id/admin_button2"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/rounded_corners_left"
+        android:backgroundTint="#f3a900"
+        android:gravity="center"
+        android:text="View Details"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@id/admin_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/admin_text"
+        app:layout_constraintWidth_percent="0.48" />
+
+    <Button
+        android:id="@+id/admin_button_pdf"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_corners_right"
+        android:backgroundTint="#12a3da"
+        android:gravity="center"
+        android:text="Upload PDF File"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/admin_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/view_pdf_button"
+        app:layout_constraintWidth_percent="0.48" />
+
+    <Button
+        android:id="@+id/view_pdf_button"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/rounded_corners_left"
+        android:backgroundTint="#f3a900"
+        android:gravity="center"
+        android:text="View PDFs"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/admin_button2"
+        app:layout_constraintStart_toEndOf="@id/admin_button_pdf"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.48" />
+
+    <Button
+        android:id="@+id/advance_request_button"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_corners_right"
+        android:backgroundTint="#4caf50"
+        android:gravity="center"
+        android:text="Advance Request"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/admin_button_pdf"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/total_advance_button"
+        app:layout_constraintWidth_percent="0.48" />
+
+    <Button
+        android:id="@+id/total_advance_button"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/rounded_corners_left"
+        android:backgroundTint="#f3a900"
+        android:gravity="center"
+        android:text="Total Advance"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/view_pdf_button"
+        app:layout_constraintStart_toEndOf="@id/advance_request_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.48" />
+
+    <Button
+        android:id="@+id/worker_schedule_upload_button"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_corners_right"
+        android:backgroundTint="#2196F3"
+        android:gravity="center"
+        android:text="Worker Schedule Upload"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/advance_request_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/view_schedule_button"
+        app:layout_constraintWidth_percent="0.48" />
+
+    <Button
+        android:id="@+id/view_schedule_button"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/rounded_corners_left"
+        android:backgroundTint="#FF9800"
+        android:gravity="center"
+        android:text="View Schedule"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/total_advance_button"
+        app:layout_constraintStart_toEndOf="@id/worker_schedule_upload_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.48" />
+
+    <Button
+        android:id="@+id/upload_credentials_button"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_corners_right"
+        android:backgroundTint="#3F51B5"
+        android:gravity="center"
+        android:text="Upload Username and Passwords"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/worker_schedule_upload_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/view_credentials_button"
+        app:layout_constraintWidth_percent="0.48" />
+
+    <Button
+        android:id="@+id/view_credentials_button"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/rounded_corners_left"
+        android:backgroundTint="#9C27B0"
+        android:gravity="center"
+        android:text="View Passwords"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/view_schedule_button"
+        app:layout_constraintStart_toEndOf="@id/upload_credentials_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.48" />
+
+    <Button
+        android:id="@+id/enter_worker_details_button"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_corners_right"
+        android:backgroundTint="#607D8B"
+        android:gravity="center"
+        android:text="Enter Worker Details"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/upload_credentials_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/view_worker_details_button"
+        app:layout_constraintWidth_percent="0.48" />
+
+    <Button
+        android:id="@+id/view_worker_details_button"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/rounded_corners_left"
+        android:backgroundTint="#009688"
+        android:gravity="center"
+        android:text="View Worker Details"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/view_credentials_button"
+        app:layout_constraintStart_toEndOf="@id/enter_worker_details_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.48" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

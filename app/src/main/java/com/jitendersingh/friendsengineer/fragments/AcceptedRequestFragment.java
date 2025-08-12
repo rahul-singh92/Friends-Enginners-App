@@ -1,0 +1,147 @@
+package com.jitendersingh.friendsengineer.fragments;
+
+import android.app.AlertDialog;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.jitendersingh.friendsengineer.R;
+import com.jitendersingh.friendsengineer.adapters.WorkerAdapter;
+import com.jitendersingh.friendsengineer.models.Worker;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+
+public class AcceptedRequestFragment extends Fragment {
+
+    private RecyclerView recyclerView;
+    private WorkerAdapter adapter;
+    private TextView noAcceptedText;
+    private FirebaseFirestore firestore;
+    private List<Worker> acceptedList;
+
+    public AcceptedRequestFragment() {
+        // Required empty public constructor
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_accepted_request, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        recyclerView = view.findViewById(R.id.accepted_recycler_view);
+        noAcceptedText = view.findViewById(R.id.text_no_accepted);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        firestore = FirebaseFirestore.getInstance();
+
+        loadAcceptedRequestsFromFirestore();
+    }
+
+    private void loadAcceptedRequestsFromFirestore() {
+        firestore.collection("Requested_Amount")
+                .whereEqualTo("Status", "Accepted")
+                .orderBy("RequestTime", Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    acceptedList = new ArrayList<>();
+
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        String docId = doc.getId();
+                        String name = doc.getString("Name");
+                        String fatherName = doc.getString("FatherName");
+                        String amount = doc.getString("Amount");
+                        String reason = doc.getString("Reason");
+
+                        // Get Timestamp and convert to formatted string
+                        Timestamp ts = doc.getTimestamp("RequestTime");
+                        String requestTime = "";
+                        if (ts != null) {
+                            Date date = ts.toDate();
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+                            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+                            requestTime = sdf.format(date);
+                        }
+
+                        // Create Worker instance only if required fields are present
+                        if (name != null && fatherName != null && amount != null && reason != null && !requestTime.isEmpty()) {
+                            Worker worker = new Worker(docId, name, fatherName, amount, reason, requestTime);
+                            worker.setDocId(docId);
+                            acceptedList.add(worker);
+                        }
+                    }
+
+                    if (acceptedList.isEmpty()) {
+                        noAcceptedText.setVisibility(View.VISIBLE);
+                        recyclerView.setVisibility(View.GONE);
+                    } else {
+                        noAcceptedText.setVisibility(View.GONE);
+                        recyclerView.setVisibility(View.VISIBLE);
+                        adapter = new WorkerAdapter(acceptedList);
+                        recyclerView.setAdapter(adapter);
+
+                        adapter.setOnItemLongClickListener((worker, position) -> {
+                            new AlertDialog.Builder(requireContext())
+                                    .setTitle("Delete Accepted Request")
+                                    .setMessage("Are you sure you want to delete the accepted request from " + worker.getName() + "?")
+                                    .setPositiveButton("Delete", (dialog, which) -> {
+                                        deleteRequestFromFirestore(worker, position);
+                                    })
+                                    .setNegativeButton("Cancel", null)
+                                    .show();
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to load accepted requests: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    noAcceptedText.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                });
+    }
+
+    private void deleteRequestFromFirestore(Worker worker, int position) {
+        if (worker.getDocId() == null) {
+            Toast.makeText(getContext(), "Document ID missing, cannot delete", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        firestore.collection("Requested_Amount")
+                .document(worker.getDocId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getContext(), "Deleted request from " + worker.getName(), Toast.LENGTH_SHORT).show();
+                    acceptedList.remove(position);
+                    adapter.notifyItemRemoved(position);
+                    adapter.notifyItemRangeChanged(position, adapter.getItemCount());
+
+                    if (adapter.getItemCount() == 0) {
+                        recyclerView.setVisibility(View.GONE);
+                        noAcceptedText.setVisibility(View.VISIBLE);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to delete request: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+}

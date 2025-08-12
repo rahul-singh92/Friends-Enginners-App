@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Fixed header -->
+    <TextView
+        android:id="@+id/header_worker_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter Worker Details"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="12dp" />
+
+    <!-- Scrollable content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/worker_image_view"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:scaleType="centerCrop"
+                android:src="@drawable/baseline_person_24"
+                android:background="@android:color/darker_gray"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="Worker Image" />
+
+            <Button
+                android:id="@+id/upload_image_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Upload Image" />
+
+            <EditText
+                android:id="@+id/p_no"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="P. No."
+                android:inputType="number" />
+
+            <EditText
+                android:id="@+id/esi_no"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="ESI No."
+                android:inputType="number" />
+
+            <EditText
+                android:id="@+id/uan_no"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="UAN No."
+                android:inputType="number" />
+
+            <EditText
+                android:id="@+id/pf_no"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="PF No."
+                android:inputType="number" />
+
+
+            <EditText
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Name" />
+
+            <EditText
+                android:id="@+id/father_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Father's Name" />
+
+            <EditText
+                android:id="@+id/contact_number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Contact Number"
+                android:inputType="phone" />
+
+            <EditText
+                android:id="@+id/date_of_joining"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Date of Joining"
+                android:focusable="false"
+                android:clickable="true"
+                android:inputType="none" />
+
+            <EditText
+                android:id="@+id/department"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Department" />
+
+            <EditText
+                android:id="@+id/date_of_leave"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Date of Leave (if any)"
+                android:focusable="false"
+                android:clickable="true"
+                android:inputType="none" />
+
+            <Button
+                android:id="@+id/submit_worker_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Submit"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="@color/teal_700"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

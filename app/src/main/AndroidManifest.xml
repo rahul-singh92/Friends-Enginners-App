@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.jitendersingh.friendsengineer"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <application
+        android:name=".MyApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.FriendsEngineer"
+        tools:targetApi="31">
+        <!-- Splash Screen Activity (Launcher Activity) -->
+        <activity
+            android:name=".SplashScreenActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".LoginActivity" />
+        <!-- Admin Activity-->
+        <activity android:name=".AdminActivity" />
+        <!-- Main Activity -->
+        <activity android:name=".WorkerActivity" />
+        <activity android:name=".TableListActivity" />
+        <activity android:name=".DataListActivity" />
+        <activity android:name=".DataDetailActivity" />
+        <activity android:name=".AdvanceRequestActivity" />
+        <activity android:name=".BranchListActivity" />
+        <activity android:name=".BranchPdfListActivity" />
+        <activity android:name=".CredentialsTablesActivity" />
+        <activity android:name=".CredentialsDetailsActivity" />
+        <activity android:name=".ViewWorkerDetailsActivity" />
+        <activity android:name=".WorkerDetailActivity" />
+        <activity android:name=".WorkerDetailsActivity" />
+        <activity android:name=".WorkerScheduleActivity" />
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+        <meta-data
+            android:name="android.support.FILE_PROVIDER_PATHS"
+            android:resource="@xml/file_paths" />
+        </provider>
+        <activity android:name=".WageCollectionsActivity" />
+        <activity android:name=".WagePersonListActivity" />
+        <activity android:name=".ViewPdfPageActivity" />
+        <activity
+            android:name=".TotalAdvanceActivity"
+            android:label="Total Advance"
+            android:exported="false" />
+        <activity android:name=".TotalRequestedActivity"
+            android:exported="false" />
+
+    </application>
+
+</manifest>
