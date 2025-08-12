@@ -1,15 +1,68 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+build/
+
+# Gradle files
+.gradle/
+build/
+**/build/
+
+# Local configuration file (contains env info)
 local.properties
+
+# Signing keys
+*.jks
+
+# Firebase config (keep this safe)
+google-services.json
+
+# IntelliJ project files
+*.iml
+.idea/
+*.ipr
+*.iws
+
+# Keystore files
+*.keystore
+
+# Log files
+*.log
+
+# Mac/Windows hidden files
+.DS_Store
+Thumbs.db
+
+# Android Studio Navigation JSON
+.navigation/
+
+# Crashlytics/Fabric files
+fabric.properties
+
+# Temporary files
+*.tmp
+
+# Other IDEs
+.vscode/
+*.swp
+
+# node_modules if using React Native submodules
+node_modules/
+
+# test coverage
+coverage/
+
+# Gradle daemon logs
+.gradle/daemon/
