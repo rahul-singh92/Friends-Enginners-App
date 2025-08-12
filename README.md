@@ -48,7 +48,6 @@ An Android app (Java/XML) designed to manage worker data, authentication, schedu
 
 ## 📸 Screenshots
 
-```markdown
 ### Login Page
 ![Login Page](screenshots/login.jpg)
 
