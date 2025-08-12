@@ -62,3 +62,45 @@ An Android app (Java/XML) designed to manage worker data, authentication, schedu
 
 ### Schedule View
 <img src="screenshots/schedule_view.jpg" alt="Schedule View" width="400"/>
+
+---
+
+## 🚀 Getting Started
+
+### ✅ Prerequisites
+
+- Android Studio Arctic Fox or later  
+- Firebase Project with Firestore and Storage enabled  
+- Java 8 or above  
+
+---
+
+### ⚙️ Installation
+
+1. Clone the repository:  
+   ```bash
+   git clone https://github.com/rahul-singh92/Friends-Enginners-App.git
+   
+2. Open the project in Android Studio.
+3. Connect it to your Firebase project:
+   - Add your google-services.json file to the app/ directory.
+   - Enable Firestore and Firebase Storage in the Firebase Console.
+4. Sync Gradle and run the app on your emulator or device.
+
+---
+
+### 🤝 Contributing
+- Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change or add.
+
+---
+
+### 📄 License
+- This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+--- 
+
+### 📬 Contact
+- Rahul Singh Jadoun
+- 📧 rahulsinghjadoun09@gmail.com
+- 🔗 Friends Engineers App
+
