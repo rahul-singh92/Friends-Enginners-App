@@ -49,16 +49,16 @@ An Android app (Java/XML) designed to manage worker data, authentication, schedu
 ## 📸 Screenshots
 
 ### Login Page
-![Login Page](screenshots/login.jpg)
+<img src="screenshots/login.jpg" alt="Login Page" width="400"/>
 
 ### Admin Dashboard
-![Admin Dashboard](screenshots/admin_dashboard.jpg)
+<img src="screenshots/admin_dashboard.jpg" alt="Admin Dashboard" width="400"/>
 
 ### Worker Dashboard
-![Worker Dashboard](screenshots/worker_dashboard.jpg)
+<img src="screenshots/worker_dashboard.jpg" alt="Worker Dashboard" width="400"/>
 
 ### Advance Request
-![Advance Request](screenshots/advance_request.jpg)
+<img src="screenshots/advance_request.jpg" alt="Advance Request" width="400"/>
 
 ### Schedule View
-![Schedule View](screenshots/schedule_view.jpg)
+<img src="screenshots/schedule_view.jpg" alt="Schedule View" width="400"/>
