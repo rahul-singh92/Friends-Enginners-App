@@ -1,1 +1,63 @@
-/build
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+build/
+
+# Gradle files
+.gradle/
+build/
+**/build/
+
+# Local configuration file (SDK paths, etc)
+local.properties
+
+# Signing files (keep your keystore secret)
+*.jks
+*.keystore
+
+# Firebase / Firestore configs (do not commit!)
+google-services.json
+firebase.json
+
+# IntelliJ/Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Log files
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Crashlytics
+crashlytics-build.properties
+fabric.properties
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# NDK
+obj/
+
+# Misc
+*.lock
+*.tmp
+*.swp

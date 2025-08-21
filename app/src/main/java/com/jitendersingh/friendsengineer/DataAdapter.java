@@ -10,17 +10,36 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DataAdapter extends ArrayAdapter<DataListActivity.DataItem> {
 
     private final Context context;
-    private final List<DataListActivity.DataItem> dataItems;
+    private final List<DataListActivity.DataItem> dataList;
 
     public DataAdapter(Context context, List<DataListActivity.DataItem> dataItems) {
         super(context, R.layout.item_data, dataItems);
         this.context = context;
-        this.dataItems = dataItems;
+        this.dataList = new ArrayList<>(dataItems); // initialize dataList as a copy
+    }
+
+    // Update adapter data and refresh listview
+    public void updateData(List<DataListActivity.DataItem> newData) {
+        dataList.clear();
+        dataList.addAll(newData);
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public int getCount() {
+        return dataList.size();
+    }
+
+    @Nullable
+    @Override
+    public DataListActivity.DataItem getItem(int position) {
+        return dataList.get(position);
     }
 
     @NonNull
@@ -30,13 +49,13 @@ public class DataAdapter extends ArrayAdapter<DataListActivity.DataItem> {
             convertView = LayoutInflater.from(context).inflate(R.layout.item_data, parent, false);
         }
 
-        DataListActivity.DataItem item = dataItems.get(position);
+        DataListActivity.DataItem item = dataList.get(position);
 
         TextView tvId = convertView.findViewById(R.id.tv_id);
         TextView tvName = convertView.findViewById(R.id.tv_name);
         TextView tvFatherName = convertView.findViewById(R.id.tv_father_name);
 
-        tvId.setText(String.valueOf(item.getId()));
+        tvId.setText(item.getDocumentId());
         tvName.setText(item.getName());
         tvFatherName.setText(item.getFatherName());
 

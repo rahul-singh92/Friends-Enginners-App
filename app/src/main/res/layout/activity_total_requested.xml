@@ -4,9 +4,20 @@
     android:orientation="vertical"
     android:padding="10dp">
 
+    <TextView
+        android:id="@+id/tv_total_requested_heading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total Requested"
+        android:textColor="@android:color/black"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:paddingBottom="8dp" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_total_requested"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
 </LinearLayout>

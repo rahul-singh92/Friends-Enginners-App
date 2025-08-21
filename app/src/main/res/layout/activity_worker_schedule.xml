@@ -4,19 +4,30 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <TextView
+        android:id="@+id/tv_heading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View Schedule"
+        android:textColor="@android:color/black"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_alignParentTop="true" />
+
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_centerInParent="true"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 
     <ListView
         android:id="@+id/schedule_listview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/tv_heading"
+        android:layout_marginTop="8dp"
         android:dividerHeight="1dp"
-        android:paddingTop="8dp"
-        android:layout_below="@id/progressBar"/>
+        android:paddingTop="8dp" />
 
 </RelativeLayout>

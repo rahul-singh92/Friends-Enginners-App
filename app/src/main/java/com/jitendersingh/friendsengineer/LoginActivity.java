@@ -59,6 +59,7 @@ public class LoginActivity extends Activity {
                                 getSharedPreferences("UserPrefs", MODE_PRIVATE)
                                         .edit()
                                         .putBoolean("isAdmin", true)
+                                        .putString("logged_in_username",username)
                                         .apply();
 
                                 startActivity(new Intent(LoginActivity.this, AdminActivity.class));
@@ -93,6 +94,7 @@ public class LoginActivity extends Activity {
                             getSharedPreferences("UserPrefs", MODE_PRIVATE)
                                     .edit()
                                     .putBoolean("isAdmin", false)
+                                    .putString("logged_in_username",username)
                                     .apply();
 
                             Intent intent = new Intent(LoginActivity.this, WorkerActivity.class);

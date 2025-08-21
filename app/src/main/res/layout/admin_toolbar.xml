@@ -30,6 +30,15 @@
             android:layout_height="match_parent"
             android:layout_weight="1"/>
 
+        <!-- Message Icon before user icon -->
+        <ImageView
+            android:id="@+id/message_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/message_logo"
+            android:scaleType="centerCrop"
+            android:layout_marginEnd="8dp"/>
+
         <!-- User Icon on the right -->
         <ImageView
             android:id="@+id/user_icon"

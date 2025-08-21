@@ -1,6 +1,7 @@
 package com.jitendersingh.friendsengineer;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
@@ -25,17 +27,17 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import android.app.ProgressDialog;
+import java.util.Map;
 
 public class UploadExcelBottomSheet extends BottomSheetDialogFragment {
 
     private static final int FILE_SELECT_CODE = 100;
     private Uri selectedFileUri;
     private Button btnSelectFile, btnUpload;
-    private DatabaseHelper databaseHelper;
-    private android.app.AlertDialog loadingDialog;
+    private FirebaseFirestore firestore;
 
     @Nullable
     @Override
@@ -45,12 +47,14 @@ public class UploadExcelBottomSheet extends BottomSheetDialogFragment {
         btnSelectFile = view.findViewById(R.id.btn_select_file);
         btnUpload = view.findViewById(R.id.btn_submit);
 
+        firestore = FirebaseFirestore.getInstance();
+
         btnSelectFile.setOnClickListener(v -> openFileChooser());
         btnUpload.setOnClickListener(v -> {
             if (selectedFileUri != null) {
                 ProgressDialog progressDialog = new ProgressDialog(getContext());
                 progressDialog.setMessage("Uploading...");
-                progressDialog.setCancelable(false); // not cancellable by touching outside
+                progressDialog.setCancelable(false);
                 progressDialog.show();
 
                 new Thread(() -> {
@@ -93,21 +97,48 @@ public class UploadExcelBottomSheet extends BottomSheetDialogFragment {
                         String selectedYear = spinnerYear.getSelectedItem().toString();
                         String selectedMonth = spinnerMonth.getSelectedItem().toString();
 
-                        databaseHelper.createTableIfNotExists(columnNames, selectedSheetType, selectedYear, selectedMonth);
-                        databaseHelper.insertDynamicData(columnNames, extractedData);
+                        // Create collection name from sheetType, year, month
+                        String collectionName = selectedSheetType + selectedYear + selectedMonth;
+
+                        // Save the collection name into a dedicated collection "CollectionsList"
+                        Map<String, Object> collectionReminder = new HashMap<>();
+                        collectionReminder.put("name", collectionName);
+
+                        firestore.collection("CollectionsList")
+                                .document(collectionName) // avoid duplicates by using collectionName as docId
+                                .set(collectionReminder)
+                                .addOnSuccessListener(aVoid -> Log.d("Firestore", "Collection name saved"))
+                                .addOnFailureListener(e -> Log.e("Firestore", "Error saving collection name", e));
+
+                        // Save each row as a document inside the collectionName collection
+                        for (List<String> rowData : extractedData) {
+                            Map<String, Object> dataMap = new HashMap<>();
+                            for (int i = 0; i < columnNames.size(); i++) {
+                                dataMap.put(columnNames.get(i), rowData.get(i));
+                            }
+                            // Additional metadata can be omitted here as collection name encodes it
+
+                            firestore.collection(collectionName)
+                                    .add(dataMap)
+                                    .addOnSuccessListener(documentReference -> {
+                                        Log.d("Firestore", "Document written with ID: " + documentReference.getId());
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e("Firestore", "Error adding document", e);
+                                    });
+                        }
 
                         if (getActivity() != null) {
                             getActivity().runOnUiThread(() -> {
                                 progressDialog.dismiss();
-                                Toast.makeText(getContext(), "Data inserted successfully", Toast.LENGTH_SHORT).show();
-                                dismiss(); // dismiss bottom sheet after upload
+                                Toast.makeText(getContext(), "Data uploaded successfully", Toast.LENGTH_SHORT).show();
+                                dismiss();
                             });
                         }
                     } catch (Exception e) {
                         Log.e("ExcelDebug", "Error processing file: ", e);
                         if (getActivity() != null) {
                             getActivity().runOnUiThread(() -> {
-                                progressDialog.dismiss();
                                 Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                             });
                         }
@@ -117,9 +148,6 @@ public class UploadExcelBottomSheet extends BottomSheetDialogFragment {
                 Toast.makeText(getContext(), "Please select a file first", Toast.LENGTH_SHORT).show();
             }
         });
-
-
-        databaseHelper = new DatabaseHelper(getContext());
 
         return view;
     }

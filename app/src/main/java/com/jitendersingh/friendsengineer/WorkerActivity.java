@@ -1,19 +1,23 @@
 package com.jitendersingh.friendsengineer;
 
-import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -21,16 +25,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class WorkerActivity extends Activity {
+public class WorkerActivity extends AppCompatActivity {
 
     TextView welcomeText;
     String username; // from login activity
     String workerName; // store fetched name
+    FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_worker);
+
+        db = FirebaseFirestore.getInstance();
+
+        ImageView userIcon = findViewById(R.id.user_icon);
+        userIcon.setOnClickListener(v -> showUserOptionsDialog());
+
+        ImageView messageIcon = findViewById(R.id.message_icon);
+        messageIcon.setOnClickListener(v -> {
+            Intent intent = new Intent(WorkerActivity.this, MessageViewOnlyActivity.class);
+            startActivity(intent);
+        });
+
 
         welcomeText = findViewById(R.id.welcome_text);
         username = getIntent().getStringExtra("username");
@@ -39,8 +56,105 @@ public class WorkerActivity extends Activity {
         fetchWorkerNameAndSetupUI(username);
     }
 
+    private void showUserOptionsDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("User Options")
+                .setItems(new String[]{"Change Password"}, (dialog, which) -> {
+                    if (which == 0) { // Change Password selected
+                        showChangePasswordDialog();
+                    }
+                })
+                .show();
+    }
+
+
+    private void showChangePasswordDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Change Password");
+
+        View viewInflated = LayoutInflater.from(this).inflate(R.layout.dialog_change_password, null, false);
+        final EditText inputOldPassword = viewInflated.findViewById(R.id.input_old_password);
+        final EditText inputNewPassword = viewInflated.findViewById(R.id.input_new_password);
+        final EditText inputConfirmPassword = viewInflated.findViewById(R.id.input_confirm_password);
+
+        builder.setView(viewInflated);
+
+        builder.setPositiveButton("OK", null); // will override below
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+        AlertDialog dialog = builder.create();
+
+        dialog.setOnShowListener(dialogInterface -> {
+            Button button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            button.setOnClickListener(view -> {
+                String oldPassword = inputOldPassword.getText().toString().trim();
+                String newPassword = inputNewPassword.getText().toString().trim();
+                String confirmPassword = inputConfirmPassword.getText().toString().trim();
+
+                if (oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+                    Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (!newPassword.equals(confirmPassword)) {
+                    Toast.makeText(this, "New Password and Confirm Password do not match", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (!isValidPassword(newPassword)) {
+                    Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                updatePassword(oldPassword, newPassword, dialog);
+            });
+        });
+
+        dialog.show();
+    }
+
+    private boolean isValidPassword(String password) {
+        return password.length() >= 6;
+    }
+
+    private void updatePassword(String oldPassword, String newPassword, AlertDialog dialog) {
+        if (username == null || username.isEmpty()) {
+            Toast.makeText(this, "User not logged in properly", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        db.collection("credentials_worker")
+                .whereEqualTo("Username", username)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        boolean updated = false;
+                        for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                            String storedPassword = doc.getString("Password");
+
+                            if (storedPassword != null && storedPassword.equals(oldPassword)) {
+                                db.collection("credentials_worker").document(doc.getId())
+                                        .update("Password", newPassword)
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "Password changed successfully", Toast.LENGTH_SHORT).show();
+                                            dialog.dismiss();
+                                        })
+                                        .addOnFailureListener(e -> Toast.makeText(this, "Failed to update password: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                updated = true;
+                                break;
+                            }
+                        }
+                        if (!updated) {
+                            Toast.makeText(this, "Old password is incorrect", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Error fetching user: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
     private void fetchWorkerNameAndSetupUI(String username) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("credentials_worker")
                 .whereEqualTo("Username", username)
                 .get()
@@ -110,9 +224,7 @@ public class WorkerActivity extends Activity {
                             Toast.makeText(WorkerActivity.this, "User info not found", Toast.LENGTH_SHORT).show();
                         }
                     })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(WorkerActivity.this, "Error fetching details: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
+                    .addOnFailureListener(e -> Toast.makeText(WorkerActivity.this, "Error fetching details: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
 
         // PF Passbook button
@@ -162,7 +274,7 @@ public class WorkerActivity extends Activity {
                 .whereEqualTo("Name", workerName)
                 .whereGreaterThanOrEqualTo("RequestTime", monthStart)
                 .whereLessThanOrEqualTo("RequestTime", monthEnd)
-                .whereIn("Status", java.util.Arrays.asList("Pending", "Accepted","Rejected"))
+                .whereIn("Status", java.util.Arrays.asList("Pending", "Accepted", "Rejected"))
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     int count = querySnapshot.size();
@@ -176,9 +288,7 @@ public class WorkerActivity extends Activity {
                         showRequestAdvanceDialog();
                     }
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to check request limit: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to check request limit: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void showRequestAdvanceDialog() {
@@ -189,24 +299,24 @@ public class WorkerActivity extends Activity {
         new AlertDialog.Builder(this)
                 .setTitle("Request Advance")
                 .setView(dialogView)
-                .setPositiveButton("Submit", (dialog, which) -> {
-                    String amount = amountInput.getText().toString().trim();
-                    String reason = reasonInput.getText().toString().trim();
+                .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        String amount = amountInput.getText().toString().trim();
+                        String reason = reasonInput.getText().toString().trim();
 
-                    if (amount.isEmpty() || reason.isEmpty()) {
-                        Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                        return;
+                        if (amount.isEmpty() || reason.isEmpty()) {
+                            Toast.makeText(WorkerActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        new AlertDialog.Builder(WorkerActivity.this)
+                                .setTitle("Confirm Request")
+                                .setMessage("Do you really want to request an advance of ₹" + amount + "?")
+                                .setPositiveButton("Yes", (confDialog, confWhich) -> insertAdvanceRequest(amount, reason))
+                                .setNegativeButton("No", null)
+                                .show();
+
                     }
-
-                    new AlertDialog.Builder(this)
-                            .setTitle("Confirm Request")
-                            .setMessage("Do you really want to request an advance of ₹" + amount + "?")
-                            .setPositiveButton("Yes", (confDialog, confWhich) -> {
-                                insertAdvanceRequest(amount, reason);
-                            })
-                            .setNegativeButton("No", null)
-                            .show();
-
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -217,9 +327,6 @@ public class WorkerActivity extends Activity {
             Toast.makeText(this, "Worker name not available", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // Since father name is not available here, you may want to fetch it too from Firestore if needed,
-        // For now, we can save "Unknown" or fetch asynchronously before saving.
 
         String fatherName = "Unknown";
 
@@ -237,12 +344,8 @@ public class WorkerActivity extends Activity {
 
         firestore.collection("Requested_Amount")
                 .add(requestData)
-                .addOnSuccessListener(docRef -> {
-                    Toast.makeText(this, "Request stored in Firestore", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to store in Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                .addOnSuccessListener(docRef -> Toast.makeText(this, "Request stored in Firestore", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to store in Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show());
 
         Toast.makeText(this, "Advance request submitted successfully", Toast.LENGTH_SHORT).show();
     }

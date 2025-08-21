@@ -1,7 +1,5 @@
 package com.jitendersingh.friendsengineer;
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,31 +11,31 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import java.util.LinkedHashMap;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.Map;
 
 public class DataDetailActivity extends AppCompatActivity {
 
     private static final String TAG = "DataDetailActivity";
-    private String tableName;
-    private int recordId;
-    private DatabaseHelper dbHelper;
+    private String collectionName;
+    private String documentId;
     private LinearLayout detailContainer;
+    private FirebaseFirestore firestore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_detail);
 
-        // Set up toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Get parameters from intent
-        tableName = getIntent().getStringExtra("TABLE_NAME");
-        recordId = getIntent().getIntExtra("RECORD_ID", -1);
+        collectionName = getIntent().getStringExtra("COLLECTION_NAME");
+        documentId = getIntent().getStringExtra("DOCUMENT_ID");
 
-        if (tableName == null || tableName.isEmpty() || recordId == -1) {
+        if (collectionName == null || documentId == null || collectionName.isEmpty() || documentId.isEmpty()) {
             Toast.makeText(this, "Invalid parameters", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -45,114 +43,74 @@ public class DataDetailActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Record Details");
-            getSupportActionBar().setSubtitle("ID: " + recordId);
+            getSupportActionBar().setSubtitle("ID: " + documentId);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        // Initialize views
         detailContainer = findViewById(R.id.detail_container);
+        firestore = FirebaseFirestore.getInstance();
 
-        // Initialize database helper
-        dbHelper = new DatabaseHelper(this);
-
-        // Load and display record details
-        loadRecordDetails();
+        loadDocumentDetails();
     }
 
-    private void loadRecordDetails() {
-        Map<String, String> recordDetails = getRecordDetails();
+    private void loadDocumentDetails() {
+        firestore.collection(collectionName).document(documentId)
+                .get()
+                .addOnSuccessListener(this::displayDocumentFields)
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to load document: ", e);
+                    Toast.makeText(this, "Failed to load details", Toast.LENGTH_SHORT).show();
+                });
+    }
 
-        if (recordDetails.isEmpty()) {
-            Toast.makeText(this, "No details found for this record", Toast.LENGTH_SHORT).show();
+    private void displayDocumentFields(DocumentSnapshot document) {
+        if (!document.exists()) {
+            Toast.makeText(this, "Document does not exist", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Map<String, Object> fields = document.getData();
+        if (fields == null || fields.isEmpty()) {
+            Toast.makeText(this, "No data found", Toast.LENGTH_SHORT).show();
             return;
         }
 
         LayoutInflater inflater = LayoutInflater.from(this);
+        detailContainer.removeAllViews();
 
-        // Display each field in the container
-        for (Map.Entry<String, String> entry : recordDetails.entrySet()) {
+        for (Map.Entry<String, Object> entry : fields.entrySet()) {
             View itemView = inflater.inflate(R.layout.item_field_detail, detailContainer, false);
 
             TextView labelView = itemView.findViewById(R.id.field_label);
             TextView valueView = itemView.findViewById(R.id.field_value);
 
-            String label = formatColumnName(entry.getKey());
-            String value = entry.getValue();
-
-            labelView.setText(label);
-            valueView.setText(value);
+            labelView.setText(formatFieldName(entry.getKey()));
+            valueView.setText(String.valueOf(entry.getValue()));
 
             detailContainer.addView(itemView);
         }
     }
 
-    private Map<String, String> getRecordDetails() {
-        Map<String, String> details = new LinkedHashMap<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-
-        try {
-            // Get all column names first
-            try (Cursor columnCursor = db.rawQuery("PRAGMA table_info(" + tableName + ")", null)) {
-                int nameIndex = columnCursor.getColumnIndex("name");
-                StringBuilder columnsBuilder = new StringBuilder();
-
-                if (nameIndex != -1) {
-                    while (columnCursor.moveToNext()) {
-                        String columnName = columnCursor.getString(nameIndex);
-                        columnsBuilder.append(columnName).append(", ");
-                    }
-                }
-
-                String columns = columnsBuilder.toString();
-                if (columns.endsWith(", ")) {
-                    columns = columns.substring(0, columns.length() - 2);
-                }
-
-                // Query the specific record
-                String query = "SELECT " + columns + " FROM " + tableName + " WHERE id = ?";
-                try (Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(recordId)})) {
-                    if (cursor != null && cursor.moveToFirst()) {
-                        for (int i = 0; i < cursor.getColumnCount(); i++) {
-                            String columnName = cursor.getColumnName(i);
-                            String value = cursor.getString(i);
-                            details.put(columnName, value != null ? value : "NO VALUE");
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error loading record details: " + e.getMessage(), e);
-            Toast.makeText(this, "Error loading details: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-
-        return details;
-    }
-
-    private String formatColumnName(String columnName) {
-        // Format column name for display (e.g., "first_name" -> "First Name")
-        if (columnName == null || columnName.isEmpty()) {
+    private String formatFieldName(String fieldName) {
+        if (fieldName == null || fieldName.isEmpty()) {
             return "Unknown";
         }
 
-        // Replace underscores with spaces
-        String formatted = columnName.replace('_', ' ');
-
-        // Capitalize first letter of each word
+        // Replace underscores with spaces & capitalize words
+        String formatted = fieldName.replace('_', ' ');
         StringBuilder result = new StringBuilder();
-        boolean capitalizeNext = true;
-
+        boolean capitalize = true;
         for (char c : formatted.toCharArray()) {
             if (Character.isSpaceChar(c)) {
-                capitalizeNext = true;
+                capitalize = true;
                 result.append(c);
-            } else if (capitalizeNext) {
+            } else if (capitalize) {
                 result.append(Character.toUpperCase(c));
-                capitalizeNext = false;
+                capitalize = false;
             } else {
                 result.append(Character.toLowerCase(c));
             }
         }
-
         return result.toString();
     }
 
@@ -160,13 +118,5 @@ public class DataDetailActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (dbHelper != null) {
-            dbHelper.close();
-        }
     }
 }

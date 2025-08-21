@@ -6,6 +6,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,6 +30,12 @@ public class WageCollectionsActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recyclerViewCollections);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Add divider decoration
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
+                DividerItemDecoration.VERTICAL);
+
+        recyclerView.addItemDecoration(dividerItemDecoration);
 
         wageCollections = new ArrayList<>();
         adapter = new CollectionsAdapter(wageCollections, this::onCollectionClicked);
