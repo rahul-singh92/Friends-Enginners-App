@@ -2,12 +2,20 @@ package com.jitendersingh.friendsengineer;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -27,6 +35,14 @@ public class LoginActivity extends Activity {
         TextView errorText = findViewById(R.id.errorText);
 
         DatabaseHelper dbHelper = new DatabaseHelper(this); // optional if used later
+
+        // Check if privacy policy was already accepted
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean policyAccepted = prefs.getBoolean("privacy_policy_accepted", false);
+
+        if (!policyAccepted) {
+            showPrivacyPolicyDialog();
+        }
 
         loginBtn.setOnClickListener(view -> {
             String username = usernameField.getText().toString().trim();
@@ -73,6 +89,49 @@ public class LoginActivity extends Activity {
                         }
                     });
         });
+    }
+
+    private void showPrivacyPolicyDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_privacy_policy, null);
+
+        TextView privacyLink = dialogView.findViewById(R.id.privacy_policy_link);
+        CheckBox checkboxAccept = dialogView.findViewById(R.id.checkbox_accept);
+        Button buttonOk = dialogView.findViewById(R.id.button_ok);
+
+        builder.setView(dialogView);
+        builder.setCancelable(false); // User must accept to continue
+
+        AlertDialog dialog = builder.create();
+
+        // Privacy policy link click
+        privacyLink.setOnClickListener(v -> {
+            String privacyUrl = "https://github.com/rahul-singh92/Friends-Enginners-App/blob/main/privacy_policy.md"; // Replace with your actual GitHub privacy policy URL
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(privacyUrl));
+            startActivity(intent);
+        });
+
+        // Enable/disable OK button based on checkbox
+        checkboxAccept.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            buttonOk.setEnabled(isChecked);
+            if (isChecked) {
+                buttonOk.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1976D2")));
+            } else {
+                buttonOk.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#CCCCCC")));
+            }
+        });
+
+        // OK button click
+        buttonOk.setOnClickListener(v -> {
+            if (checkboxAccept.isChecked()) {
+                // Save acceptance in SharedPreferences
+                SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                prefs.edit().putBoolean("privacy_policy_accepted", true).apply();
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
     }
 
     private void checkWorkerCredentials(FirebaseFirestore db, String username, String password, TextView errorText) {
