@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -183,28 +184,28 @@ public class WorkerActivity extends AppCompatActivity {
     }
 
     private void setupButtons() {
-        // Setup Request Advance Button
-        Button requestAdvanceButton = findViewById(R.id.request_advance_button);
+        // Setup Request Advance Button - Changed from Button to CardView
+        CardView requestAdvanceButton = findViewById(R.id.request_advance_button);
         requestAdvanceButton.setOnClickListener(v -> checkRequestLimitAndShowDialog());
 
-        // Total requested Button
-        Button totalAdvanceButton = findViewById(R.id.total_advance_button);
+        // Total requested Button - Changed from Button to CardView
+        CardView totalAdvanceButton = findViewById(R.id.total_advance_button);
         totalAdvanceButton.setOnClickListener(v -> {
             Intent intent = new Intent(WorkerActivity.this, TotalRequestedActivity.class);
             intent.putExtra("workerName", workerName);
             startActivity(intent);
         });
 
-        // View Schedule Button
-        Button viewScheduleBtn = findViewById(R.id.view_schedule_button);
+        // View Schedule Button - Changed from Button to CardView
+        CardView viewScheduleBtn = findViewById(R.id.view_schedule_button);
         viewScheduleBtn.setOnClickListener(v -> {
             Intent intent = new Intent(WorkerActivity.this, WorkerScheduleActivity.class);
             intent.putExtra("workerName", workerName);
             startActivity(intent);
         });
 
-        // Setup my detail button
-        Button viewMyDetail = findViewById(R.id.my_detail);
+        // Setup my detail button - Changed from Button to CardView
+        CardView viewMyDetail = findViewById(R.id.my_detail);
         viewMyDetail.setOnClickListener(v -> {
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             db.collection("credentials_worker")
@@ -227,16 +228,16 @@ public class WorkerActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> Toast.makeText(WorkerActivity.this, "Error fetching details: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
 
-        // PF Passbook button
-        Button pfPassbookBtn = findViewById(R.id.btn_pf_passbook);
+        // PF Passbook button - Changed from Button to CardView
+        CardView pfPassbookBtn = findViewById(R.id.btn_pf_passbook);
         pfPassbookBtn.setOnClickListener(v -> {
             String url = "https://passbook.epfindia.gov.in/MemberPassBook/login";
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
         });
 
-        // UAN Portal button
-        Button uanPortalBtn = findViewById(R.id.btn_uan_portal);
+        // UAN Portal button - Changed from Button to CardView
+        CardView uanPortalBtn = findViewById(R.id.btn_uan_portal);
         uanPortalBtn.setOnClickListener(v -> {
             String url = "https://unifiedportal-mem.epfindia.gov.in/memberinterface/";
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));

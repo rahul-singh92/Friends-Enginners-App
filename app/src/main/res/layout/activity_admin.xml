@@ -1,240 +1,583 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#f5f5f5">
 
-    <!-- Toolbar -->
-
-    <!-- Title Text -->
-    <include
-        layout="@layout/admin_toolbar"
-        app:layout_constraintBottom_toTopOf="@+id/admin_text"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="7dp" />
-
-    <!-- Left Button -->
-
-    <TextView
-        android:id="@+id/admin_text"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:text="Main Menu"
-        android:textAlignment="center"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/admin_toolbar" />
+        android:paddingBottom="32dp">
 
-    <!-- Right Button -->
+        <!-- Toolbar -->
+        <include
+            android:id="@+id/admin_toolbar"
+            layout="@layout/admin_toolbar"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/admin_button"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/rounded_corners_right"
-        android:backgroundTint="#12a3da"
-        android:gravity="center"
-        android:text="Upload Excel Sheet"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toStartOf="@id/admin_button2"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/admin_text"
-        app:layout_constraintWidth_percent="0.48" />
+        <!-- Main Menu Title -->
+        <TextView
+            android:id="@+id/admin_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Main Menu"
+            android:textColor="#333333"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/admin_toolbar" />
 
-    <Button
-        android:id="@+id/admin_button2"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="8dp"
-        android:background="@drawable/rounded_corners_left"
-        android:backgroundTint="#f3a900"
-        android:gravity="center"
-        android:text="View Details"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintStart_toEndOf="@id/admin_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/admin_text"
-        app:layout_constraintWidth_percent="0.48" />
+        <!-- Uploads Section -->
+        <TextView
+            android:id="@+id/uploads_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:layout_marginStart="24dp"
+            android:text="Uploads"
+            android:textColor="#666666"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/admin_text" />
 
-    <Button
-        android:id="@+id/admin_button_pdf"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/rounded_corners_right"
-        android:backgroundTint="#12a3da"
-        android:gravity="center"
-        android:text="Upload PDF File"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/admin_button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/view_pdf_button"
-        app:layout_constraintWidth_percent="0.48" />
+        <!-- Upload Excel Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/admin_button"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#4A90E2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/admin_button_pdf"
+            app:layout_constraintTop_toBottomOf="@id/uploads_header"
+            app:layout_constraintWidth_percent="0.46">
 
-    <Button
-        android:id="@+id/view_pdf_button"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="8dp"
-        android:background="@drawable/rounded_corners_left"
-        android:backgroundTint="#f3a900"
-        android:gravity="center"
-        android:text="View PDFs"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/admin_button2"
-        app:layout_constraintStart_toEndOf="@id/admin_button_pdf"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.48" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
 
-    <Button
-        android:id="@+id/advance_request_button"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/rounded_corners_right"
-        android:backgroundTint="#4caf50"
-        android:gravity="center"
-        android:text="Advance Request"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/admin_button_pdf"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/total_advance_button"
-        app:layout_constraintWidth_percent="0.48" />
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/grid_view"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
 
-    <Button
-        android:id="@+id/total_advance_button"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="8dp"
-        android:background="@drawable/rounded_corners_left"
-        android:backgroundTint="#f3a900"
-        android:gravity="center"
-        android:text="Total Advance"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/view_pdf_button"
-        app:layout_constraintStart_toEndOf="@id/advance_request_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.48" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Upload\nExcel Sheet"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
 
-    <Button
-        android:id="@+id/worker_schedule_upload_button"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/rounded_corners_right"
-        android:backgroundTint="#2196F3"
-        android:gravity="center"
-        android:text="Worker Schedule Upload"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/advance_request_button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/view_schedule_button"
-        app:layout_constraintWidth_percent="0.48" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-    <Button
-        android:id="@+id/view_schedule_button"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="8dp"
-        android:background="@drawable/rounded_corners_left"
-        android:backgroundTint="#FF9800"
-        android:gravity="center"
-        android:text="View Schedule"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/total_advance_button"
-        app:layout_constraintStart_toEndOf="@id/worker_schedule_upload_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.48" />
+        <!-- Upload PDF Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/admin_button_pdf"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#5DADE2"
+            app:layout_constraintStart_toEndOf="@id/admin_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/uploads_header"
+            app:layout_constraintWidth_percent="0.46">
 
-    <Button
-        android:id="@+id/upload_credentials_button"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/rounded_corners_right"
-        android:backgroundTint="#3F51B5"
-        android:gravity="center"
-        android:text="Upload Username and Passwords"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/worker_schedule_upload_button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/view_credentials_button"
-        app:layout_constraintWidth_percent="0.48" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
 
-    <Button
-        android:id="@+id/view_credentials_button"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="8dp"
-        android:background="@drawable/rounded_corners_left"
-        android:backgroundTint="#9C27B0"
-        android:gravity="center"
-        android:text="View Passwords"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/view_schedule_button"
-        app:layout_constraintStart_toEndOf="@id/upload_credentials_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.48" />
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/description"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
 
-    <Button
-        android:id="@+id/enter_worker_details_button"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/rounded_corners_right"
-        android:backgroundTint="#607D8B"
-        android:gravity="center"
-        android:text="Enter Worker Details"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/upload_credentials_button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/view_worker_details_button"
-        app:layout_constraintWidth_percent="0.48" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Upload\nPDF File"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
 
-    <Button
-        android:id="@+id/view_worker_details_button"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="8dp"
-        android:background="@drawable/rounded_corners_left"
-        android:backgroundTint="#009688"
-        android:gravity="center"
-        android:text="View Worker Details"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/view_credentials_button"
-        app:layout_constraintStart_toEndOf="@id/enter_worker_details_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.48" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
+        <!-- Worker Schedule Upload Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/worker_schedule_upload_button"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#58D68D"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/upload_credentials_button"
+            app:layout_constraintTop_toBottomOf="@id/admin_button"
+            app:layout_constraintWidth_percent="0.46">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/schedule"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Worker\nSchedule\nUpload"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Upload Credentials Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/upload_credentials_button"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#76D7C4"
+            app:layout_constraintStart_toEndOf="@id/worker_schedule_upload_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/admin_button_pdf"
+            app:layout_constraintWidth_percent="0.46">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/person"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Upload\nUsername\nand Passwords"
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- View & Manage Section -->
+        <TextView
+            android:id="@+id/view_manage_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:layout_marginStart="24dp"
+            android:text="View &amp; Manage"
+            android:textColor="#666666"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/worker_schedule_upload_button" />
+
+        <!-- View Details Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/admin_button2"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#F39C12"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/view_schedule_button"
+            app:layout_constraintTop_toBottomOf="@id/view_manage_header"
+            app:layout_constraintWidth_percent="0.46">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/view_list"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View\nDetails"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- View Schedule Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/view_schedule_button"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#E67E22"
+            app:layout_constraintStart_toEndOf="@id/admin_button2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/view_manage_header"
+            app:layout_constraintWidth_percent="0.46">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/schedule"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View\nSchedule"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- View PDF Button -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/view_pdf_button"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#3498DB"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/view_credentials_button"
+            app:layout_constraintTop_toBottomOf="@id/admin_button2"
+            app:layout_constraintWidth_percent="0.46">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/description"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View\nPDFs"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- View Passwords Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/view_credentials_button"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#8E44AD"
+            app:layout_constraintStart_toEndOf="@id/view_pdf_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/view_schedule_button"
+            app:layout_constraintWidth_percent="0.46">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/lock"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View\nPasswords"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Worker Details Cards -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/enter_worker_details_button"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#607D8B"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/view_worker_details_button"
+            app:layout_constraintTop_toBottomOf="@id/view_pdf_button"
+            app:layout_constraintWidth_percent="0.46">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/person_add"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enter Worker\nDetails"
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/view_worker_details_button"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#16A085"
+            app:layout_constraintStart_toEndOf="@id/enter_worker_details_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/view_credentials_button"
+            app:layout_constraintWidth_percent="0.46">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/person"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Worker\nDetails"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Finance Section -->
+        <TextView
+            android:id="@+id/finance_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:layout_marginStart="24dp"
+            android:text="Finance"
+            android:textColor="#666666"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/enter_worker_details_button" />
+
+        <!-- Advance Request Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/advance_request_button"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#9B59B6"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/total_advance_button"
+            app:layout_constraintTop_toBottomOf="@id/finance_header"
+            app:layout_constraintWidth_percent="0.46">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/attach_money"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Advance\nRequest"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Total Advance Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/total_advance_button"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#E67E22"
+            app:layout_constraintStart_toEndOf="@id/advance_request_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/finance_header"
+            app:layout_constraintWidth_percent="0.46">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/attach_money"
+                    app:tint="@android:color/white"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total\nAdvance"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

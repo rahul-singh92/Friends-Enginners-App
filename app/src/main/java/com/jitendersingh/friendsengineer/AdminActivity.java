@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -12,6 +11,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -44,81 +44,82 @@ public class AdminActivity extends AppCompatActivity {
 
 
         // Find the button and set a click listener
-        Button uploadButton = findViewById(R.id.admin_button);
+        CardView uploadButton = findViewById(R.id.admin_button);
         uploadButton.setOnClickListener(v -> {
             UploadExcelBottomSheet bottomSheet = new UploadExcelBottomSheet();
             bottomSheet.show(getSupportFragmentManager(), "UploadExcelBottomSheet");
         });
 
-        Button viewDetailsButton = findViewById(R.id.admin_button2);
+        CardView viewDetailsButton = findViewById(R.id.admin_button2);
         viewDetailsButton.setOnClickListener(v -> {
             // Launch the TableListActivity to show available data tables
             Intent intent = new Intent(AdminActivity.this, TableListActivity.class);
             startActivity(intent);
         });
 
-        Button uploadPdfButton = findViewById(R.id.admin_button_pdf);
+        CardView uploadPdfButton = findViewById(R.id.admin_button_pdf);
         uploadPdfButton.setOnClickListener(v -> {
             UploadPdfBottomSheet pdfBottomSheet = new UploadPdfBottomSheet();
             pdfBottomSheet.show(getSupportFragmentManager(), "UploadPdfBottomSheet");
         });
 
-        Button viewPdfButton = findViewById(R.id.view_pdf_button);
+        CardView viewPdfButton = findViewById(R.id.view_pdf_button);
         viewPdfButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminActivity.this, WageCollectionsActivity.class);
             startActivity(intent);
         });
 
-        Button advanceRequestButton = findViewById(R.id.advance_request_button);
+        CardView advanceRequestButton = findViewById(R.id.advance_request_button);
         advanceRequestButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminActivity.this, AdvanceRequestActivity.class);
             startActivity(intent);
         });
 
         //Total Advance Button
-        Button totalAdvanceButton = findViewById(R.id.total_advance_button);
+        CardView totalAdvanceButton = findViewById(R.id.total_advance_button);
         totalAdvanceButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminActivity.this, TotalAdvanceActivity.class);
             startActivity(intent);
         });
 
         //Worker Schedule
-        Button uploadScheduleButton = findViewById(R.id.worker_schedule_upload_button);
+        CardView uploadScheduleButton = findViewById(R.id.worker_schedule_upload_button);
         uploadScheduleButton.setOnClickListener(v -> {
             UploadScheduleBottomSheet bottomSheet = new UploadScheduleBottomSheet();
             bottomSheet.show(getSupportFragmentManager(), "WorkerScheduleBottomSheet");
         });
 
         // View Worker Schedule
-        findViewById(R.id.view_schedule_button).setOnClickListener(v -> {
+        CardView viewScheduleButton = findViewById(R.id.view_schedule_button);
+        viewScheduleButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, BranchListActivity.class);
             startActivity(intent);
         });
 
         // Upload Credentials button
-        Button uploadCredentialButton = findViewById(R.id.upload_credentials_button);
+        CardView uploadCredentialButton = findViewById(R.id.upload_credentials_button);
         uploadCredentialButton.setOnClickListener(v -> {
             UploadCredentialsBottomSheet bottomSheet = new UploadCredentialsBottomSheet();
             bottomSheet.show(getSupportFragmentManager(), "CredentialBottomScheet");
         });
 
-        Button viewCredentialButton = findViewById(R.id.view_credentials_button);
+        CardView viewCredentialButton = findViewById(R.id.view_credentials_button);
         viewCredentialButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminActivity.this, CredentialsTablesActivity.class);
             startActivity(intent);
         });
 
-        Button enterWorkerDetails = findViewById(R.id.enter_worker_details_button);
+        CardView enterWorkerDetails = findViewById(R.id.enter_worker_details_button);
         enterWorkerDetails.setOnClickListener(v -> {
             WorkerDetailBottomSheet bottomSheet = new WorkerDetailBottomSheet();
             bottomSheet.show(getSupportFragmentManager(), "WorkerDetailBottomScheet");
         });
 
         // View Worker Details
-        findViewById(R.id.view_worker_details_button).setOnClickListener(v -> {
+        CardView viewWorkerDetailsButton = findViewById(R.id.view_worker_details_button);
+        viewWorkerDetailsButton.setOnClickListener(v -> {
             startActivity(new Intent(this, ViewWorkerDetailsActivity.class));
         });
-
     }
 
     private void showUserOptionsDialog() {
