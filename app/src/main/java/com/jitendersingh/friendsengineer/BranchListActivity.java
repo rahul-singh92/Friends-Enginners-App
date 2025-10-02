@@ -2,34 +2,66 @@ package com.jitendersingh.friendsengineer;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.View;
+import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class BranchListActivity extends AppCompatActivity {
 
-    ListView listView;
-    String[] branches;
+    private RecyclerView recyclerView;
+    private LinearLayout emptyState;
+    private LinearLayout backButton;
+    private BranchAdapter adapter;
+    private List<String> branches;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_branch_list);
 
-        listView = findViewById(R.id.branch_listview);
+        // Hide action bar for modern look
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
 
-        branches = getResources().getStringArray(R.array.branch_array);
+        // Initialize views
+        recyclerView = findViewById(R.id.recyclerViewBranches);
+        emptyState = findViewById(R.id.emptyState);
+        backButton = findViewById(R.id.backButton);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, branches);
-        listView.setAdapter(adapter);
+        // Back button handler
+        backButton.setOnClickListener(v -> finish());
 
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedBranch = branches[position];
-            Intent intent = new Intent(BranchListActivity.this, BranchPdfListActivity.class);
-            intent.putExtra("branchName", selectedBranch);
-            startActivity(intent);
-        });
+        // Setup RecyclerView
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Get branches from resources
+        String[] branchArray = getResources().getStringArray(R.array.branch_array);
+        branches = Arrays.asList(branchArray);
+
+        adapter = new BranchAdapter(branches, this::onBranchClicked);
+        recyclerView.setAdapter(adapter);
+
+        // Show/hide empty state
+        if (branches.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            emptyState.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyState.setVisibility(View.GONE);
+        }
+    }
+
+    private void onBranchClicked(String branchName) {
+        Intent intent = new Intent(BranchListActivity.this, BranchPdfListActivity.class);
+        intent.putExtra("branchName", branchName);
+        startActivity(intent);
     }
 }
