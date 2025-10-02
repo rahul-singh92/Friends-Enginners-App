@@ -60,14 +60,23 @@ public class DataRecordAdapter extends RecyclerView.Adapter<DataRecordAdapter.Vi
             holder.initialText.setText("?");
         }
 
-        // Click listener
+        // Regular click listener - opens detail view
         holder.itemView.setOnClickListener(v -> {
             if (clickListener != null) {
                 clickListener.onItemClick(item);
             }
         });
 
-        // Long click on more options button
+        // Long press on entire item - shows delete dialog
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onItemLongClick(item);
+                return true; // Consume the event
+            }
+            return false;
+        });
+
+        // Click on more options button - also shows delete dialog
         holder.moreOptions.setOnClickListener(v -> {
             if (longClickListener != null) {
                 longClickListener.onItemLongClick(item);
