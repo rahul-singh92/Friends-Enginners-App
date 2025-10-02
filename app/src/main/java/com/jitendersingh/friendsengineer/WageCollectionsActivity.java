@@ -2,11 +2,12 @@ package com.jitendersingh.friendsengineer;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,26 +20,35 @@ import java.util.List;
 public class WageCollectionsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
-    private CollectionsAdapter adapter;
+    private WageCollectionAdapter adapter;
     private List<String> wageCollections;
     private FirebaseFirestore firestore;
+    private LinearLayout emptyState;
+    private LinearLayout backButton;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wage_collections);
 
+        // Hide action bar for modern look
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
+        // Initialize views
         recyclerView = findViewById(R.id.recyclerViewCollections);
+        emptyState = findViewById(R.id.emptyState);
+        backButton = findViewById(R.id.backButton);
+
+        // Back button handler
+        backButton.setOnClickListener(v -> finish());
+
+        // Setup RecyclerView (no dividers for modern look)
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Add divider decoration
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
-                DividerItemDecoration.VERTICAL);
-
-        recyclerView.addItemDecoration(dividerItemDecoration);
-
         wageCollections = new ArrayList<>();
-        adapter = new CollectionsAdapter(wageCollections, this::onCollectionClicked);
+        adapter = new WageCollectionAdapter(wageCollections, this::onCollectionClicked);
         recyclerView.setAdapter(adapter);
 
         firestore = FirebaseFirestore.getInstance();
@@ -53,11 +63,28 @@ public class WageCollectionsActivity extends AppCompatActivity {
                     wageCollections.clear();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         String name = doc.getString("name");
-                        if (name != null) wageCollections.add(name);
+                        if (name != null) {
+                            wageCollections.add(name);
+                        }
                     }
+
+                    // Show/hide empty state
+                    if (wageCollections.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyState.setVisibility(View.VISIBLE);
+                    } else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyState.setVisibility(View.GONE);
+                    }
+
                     adapter.notifyDataSetChanged();
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to load collections", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to load collections", Toast.LENGTH_SHORT).show();
+                    // Show empty state on error
+                    recyclerView.setVisibility(View.GONE);
+                    emptyState.setVisibility(View.VISIBLE);
+                });
     }
 
     private void onCollectionClicked(String collectionName) {

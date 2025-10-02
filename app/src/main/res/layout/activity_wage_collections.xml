@@ -1,28 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/container"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#1E1E1E">
 
-    <TextView
-        android:id="@+id/tv_heading"
+    <!-- Modern Header with Windows 11 style -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="View PDFs"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:padding="16dp"
-        android:gravity="center_vertical"
-        android:background="?attr/colorPrimary"
-        android:textColor="@android:color/black" />
+        android:background="#252525"
+        android:orientation="vertical"
+        android:elevation="0dp">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="20dp"
+            android:gravity="center_vertical">
+
+            <!-- Back button circle -->
+            <LinearLayout
+                android:id="@+id/backButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/win11_circle_button"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/ic_menu_revert"
+                    app:tint="#FFFFFF" />
+
+            </LinearLayout>
+
+            <!-- Title Section -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp">
+
+                <TextView
+                    android:id="@+id/tv_heading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View PDFs"
+                    android:textSize="22sp"
+                    android:textStyle="normal"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#FFFFFF" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Select a PDF collection"
+                    android:textSize="13sp"
+                    android:textColor="#A0A0A0"
+                    android:layout_marginTop="2dp" />
+
+            </LinearLayout>
+
+            <!-- PDF count badge (optional) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/win11_count_badge"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@android:drawable/ic_menu_view"
+                    app:tint="#FFFFFF" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- RecyclerView with modern spacing -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewCollections"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp" />
+        android:background="#1E1E1E"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:clipToPadding="false"
+        android:scrollbars="none"
+        android:overScrollMode="never" />
+
+    <!-- Empty state (optional) -->
+    <LinearLayout
+        android:id="@+id/emptyState"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="40dp"
+        android:background="#1E1E1E"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@android:drawable/ic_menu_agenda"
+            app:tint="#404040"
+            android:alpha="0.6" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No PDF collections found"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upload PDFs to get started"
+            android:textSize="14sp"
+            android:textColor="#808080"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
 
 </LinearLayout>
