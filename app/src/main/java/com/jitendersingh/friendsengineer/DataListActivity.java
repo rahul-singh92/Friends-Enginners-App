@@ -170,22 +170,26 @@ public class DataListActivity extends AppCompatActivity {
     }
 
     private void showDeleteConfirmationDialog(DataItem item) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete Record")
-                .setMessage("Are you sure you want to delete this record?\n\nName: " + item.getName())
-                .setPositiveButton("Delete", (dialog, which) -> deleteRecord(item.getDocumentId()))
-                .setNegativeButton("Cancel", null)
-                .show();
+        // Create dark themed confirmation dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DarkAlertDialog);
+        builder.setTitle("Delete Record");
+        builder.setMessage("Are you sure you want to delete this record?\n\nName: " + item.getName() + "\nFather's Name: " + item.getFatherName() + "\n\nThis action cannot be undone.");
+        builder.setPositiveButton("Delete", (dialog, which) -> deleteRecord(item.getDocumentId()));
+        builder.setNegativeButton("Cancel", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void deleteRecord(String documentId) {
         firestore.collection(collectionName).document(documentId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Record deleted", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Record deleted successfully", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to delete record", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Failed to delete record: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error deleting record", e);
                 });
     }
 
