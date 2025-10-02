@@ -2,6 +2,13 @@
 
 An Android app (Java/XML) designed to manage worker data, authentication, schedules, and document sharing between Admins and Workers using Firebase Firestore.
 
+## 📱 Download
+
+[![Get it on Google Play](https://img.shields.io/badge/Get%20it%20on-Google%20Play-blue?style=for-the-badge&logo=google-play)](https://play.google.com/store/apps/details?id=com.jitendersingh.friendsengineer)
+
+**My Setu** is now available on the Google Play Store!  
+[Download from Play Store](https://play.google.com/store/apps/details?id=com.jitendersingh.friendsengineer)
+
 ## ✨ Features
 
 🔐 **Login System (Admin & Worker)**
