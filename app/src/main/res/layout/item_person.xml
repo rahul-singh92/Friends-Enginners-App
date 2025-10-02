@@ -1,70 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="12dp"
-    android:layout_marginEnd="12dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
     android:layout_marginTop="6dp"
     android:layout_marginBottom="6dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
+    android:background="@drawable/win11_card_background"
+    android:orientation="horizontal"
+    android:padding="16dp"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="?android:attr/selectableItemBackground">
+    android:foreground="?android:attr/selectableItemBackground"
+    android:elevation="0dp">
 
+    <!-- Avatar Circle (Windows 11 style) -->
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp">
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="@drawable/win11_avatar"
+        android:gravity="center">
 
-        <!-- Icon/Avatar -->
-        <LinearLayout
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/avatar_circle"
-            android:gravity="center">
-
-            <TextView
-                android:id="@+id/personInitial"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="W"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF" />
-
-        </LinearLayout>
-
-        <!-- Person Info -->
-        <LinearLayout
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/personInitial"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp"
-            android:layout_gravity="center_vertical">
+            android:text="W"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#FFFFFF" />
 
-            <TextView
-                android:id="@+id/personName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Worker Name"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="#212121"
-                android:maxLines="1"
-                android:ellipsize="end" />
+    </LinearLayout>
+
+    <!-- Person Info -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="14dp"
+        android:layout_gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/personName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Worker Name"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#FFFFFF"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
 
             <TextView
                 android:id="@+id/personFatherName"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Father's Name"
-                android:textSize="14sp"
-                android:textColor="#757575"
-                android:layout_marginTop="2dp"
+                android:textSize="13sp"
+                android:textColor="#A0A0A0"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -74,22 +76,26 @@
                 android:layout_height="wrap_content"
                 android:text="Page 1"
                 android:textSize="12sp"
-                android:textColor="#9E9E9E"
-                android:layout_marginTop="4dp"
-                android:drawablePadding="4dp"
-                android:drawableStart="@android:drawable/ic_menu_agenda"
-                android:drawableTint="#9E9E9E" />
+                android:textColor="#808080"
+                android:background="@drawable/win11_page_badge"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:layout_marginStart="8dp" />
 
         </LinearLayout>
 
-        <!-- Arrow Icon -->
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_view"
-            android:tint="#BDBDBD"
-            android:layout_gravity="center_vertical" />
-
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+    <!-- Chevron icon -->
+    <ImageView
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@android:drawable/ic_menu_send"
+        android:tint="#606060"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp"
+        android:rotation="270" />
+
+</LinearLayout>

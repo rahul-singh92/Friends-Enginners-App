@@ -9,8 +9,6 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,24 +28,29 @@ public class WagePersonListActivity extends AppCompatActivity {
     private TextView headerTitle;
     private TextView workerCount;
     private LinearLayout emptyState;
+    private LinearLayout backButton;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wage_person_list);
 
+        // Hide action bar for modern look
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
         // Initialize views
         headerTitle = findViewById(R.id.headerTitle);
         workerCount = findViewById(R.id.workerCount);
         emptyState = findViewById(R.id.emptyState);
+        backButton = findViewById(R.id.backButton);
         recyclerView = findViewById(R.id.recyclerViewPersons);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Add divider between items
-        DividerItemDecoration divider = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
-        divider.setDrawable(ContextCompat.getDrawable(this, R.drawable.divider_line));
-        recyclerView.addItemDecoration(divider);
+        // Back button
+        backButton.setOnClickListener(v -> finish());
 
         persons = new ArrayList<>();
         adapter = new PersonAdapter(persons, this::onPersonClicked);
@@ -70,11 +73,9 @@ public class WagePersonListActivity extends AppCompatActivity {
     }
 
     private String formatCollectionName(String name) {
-        // Remove "wage_collection_" prefix if exists
         if (name.startsWith("wage_collection_")) {
             name = name.substring(16);
         }
-        // Replace underscores with spaces and capitalize
         return name.replace("_", " ").toUpperCase();
     }
 
