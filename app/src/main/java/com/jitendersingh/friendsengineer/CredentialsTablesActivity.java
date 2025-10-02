@@ -3,22 +3,24 @@ package com.jitendersingh.friendsengineer;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
 public class CredentialsTablesActivity extends AppCompatActivity {
 
-    private ListView listViewTables;
+    private RecyclerView recyclerView;
+    private LinearLayout emptyState;
+    private LinearLayout backButton;
+    private CredentialTableAdapter adapter;
     private ArrayList<String> tablesList;
-    private ArrayAdapter<String> adapter;
 
     private final String[] expectedCollections = {"credentials_admin", "credentials_worker"};
 
@@ -27,10 +29,25 @@ public class CredentialsTablesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_credentials_tables);
 
-        listViewTables = findViewById(R.id.listViewTables);
+        // Hide action bar for modern look
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
+        // Initialize views
+        recyclerView = findViewById(R.id.recyclerViewCredentials);
+        emptyState = findViewById(R.id.emptyState);
+        backButton = findViewById(R.id.backButton);
+
+        // Back button handler
+        backButton.setOnClickListener(v -> finish());
+
+        // Setup RecyclerView
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         tablesList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, tablesList);
-        listViewTables.setAdapter(adapter);
+        adapter = new CredentialTableAdapter(tablesList, this::onTableClicked);
+        recyclerView.setAdapter(adapter);
 
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
@@ -42,17 +59,28 @@ public class CredentialsTablesActivity extends AppCompatActivity {
                     .addOnSuccessListener(querySnapshot -> {
                         if (!querySnapshot.isEmpty()) {
                             tablesList.add(collectionName);
+
+                            // Update UI
+                            if (tablesList.isEmpty()) {
+                                recyclerView.setVisibility(View.GONE);
+                                emptyState.setVisibility(View.VISIBLE);
+                            } else {
+                                recyclerView.setVisibility(View.VISIBLE);
+                                emptyState.setVisibility(View.GONE);
+                            }
+
                             adapter.notifyDataSetChanged();
                         }
                     })
-                    .addOnFailureListener(e -> Log.e("FirestoreCheck", "Error checking collection: " + collectionName, e));
+                    .addOnFailureListener(e -> {
+                        Log.e("FirestoreCheck", "Error checking collection: " + collectionName, e);
+                    });
         }
+    }
 
-        listViewTables.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedCollection = tablesList.get(position);
-            Intent intent = new Intent(CredentialsTablesActivity.this, CredentialsDetailsActivity.class);
-            intent.putExtra("collection_name", selectedCollection);  // note: use "collection_name" instead of "table_name"
-            startActivity(intent);
-        });
+    private void onTableClicked(String collectionName) {
+        Intent intent = new Intent(CredentialsTablesActivity.this, CredentialsDetailsActivity.class);
+        intent.putExtra("collection_name", collectionName);
+        startActivity(intent);
     }
 }
