@@ -2,16 +2,19 @@ package com.jitendersingh.friendsengineer;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.ListView;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -30,22 +33,26 @@ public class DataListActivity extends AppCompatActivity {
 
     private static final String TAG = "DataListActivity";
     private String collectionName;
-    private ListView listView;
-    private TextView emptyView;
-    private androidx.appcompat.widget.SearchView searchView;
-    private DataAdapter adapter;
+    private RecyclerView recyclerView;
+    private LinearLayout emptyState;
+    private LinearLayout backButton;
+    private EditText searchEditText;
+    private TextView headerSubtitle;
+    private TextView recordCount;
+    private DataRecordAdapter adapter;
     private List<DataItem> allDataItems = new ArrayList<>();
     private FirebaseFirestore firestore;
     private ListenerRegistration firestoreListener;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_list);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        // Hide action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
 
         collectionName = getIntent().getStringExtra("TABLE_NAME");
         if (collectionName == null || collectionName.isEmpty()) {
@@ -54,55 +61,48 @@ public class DataListActivity extends AppCompatActivity {
             return;
         }
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Records");
-            getSupportActionBar().setSubtitle(collectionName);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
+        // Initialize views
+        recyclerView = findViewById(R.id.recyclerViewData);
+        emptyState = findViewById(R.id.emptyState);
+        backButton = findViewById(R.id.backButton);
+        searchEditText = findViewById(R.id.searchEditText);
+        headerSubtitle = findViewById(R.id.headerSubtitle);
+        recordCount = findViewById(R.id.recordCount);
 
-        listView = findViewById(R.id.data_list_view);
-        emptyView = findViewById(R.id.empty_view);
-        searchView = findViewById(R.id.search_view);
+        // Set collection name in header
+        headerSubtitle.setText(collectionName.replace("_", " ").toUpperCase());
+
+        // Back button handler
+        backButton.setOnClickListener(v -> finish());
+
+        // Setup RecyclerView
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        adapter = new DataRecordAdapter(allDataItems, this::onItemClicked, this::onItemLongClicked);
+        recyclerView.setAdapter(adapter);
 
         firestore = FirebaseFirestore.getInstance();
 
         loadDataFromFirestore();
 
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        // Search functionality
+        searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                filterData(query);
-                return true;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterData(s.toString());
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                filterData(newText);
-                return true;
-            }
-        });
-
-        // Normal click: You can open detailed view if implemented
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-            DataItem item = (DataItem) parent.getItemAtPosition(position);
-            Intent intent = new Intent(DataListActivity.this, DataDetailActivity.class);
-            intent.putExtra("COLLECTION_NAME", collectionName);
-            intent.putExtra("DOCUMENT_ID", item.getDocumentId());
-            startActivity(intent);
-        });
-
-        // Long click: Show deletion dialog for Firestore document
-        listView.setOnItemLongClickListener((parent, view, position, id) -> {
-            DataItem item = (DataItem) parent.getItemAtPosition(position);
-            showDeleteConfirmationDialog(item);
-            return true;
+            public void afterTextChanged(Editable s) {}
         });
     }
 
     private void loadDataFromFirestore() {
         CollectionReference collectionRef = firestore.collection(collectionName);
 
-        // Real-time listener (optional), or use get() for one-time fetch
         firestoreListener = collectionRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot snapshots,
@@ -115,18 +115,16 @@ public class DataListActivity extends AppCompatActivity {
 
                 if (snapshots == null || snapshots.isEmpty()) {
                     allDataItems.clear();
-                    adapter = new DataAdapter(DataListActivity.this, allDataItems);
-                    listView.setAdapter(adapter);
-                    listView.setVisibility(View.GONE);
-                    emptyView.setVisibility(View.VISIBLE);
+                    adapter.updateData(allDataItems);
+                    recyclerView.setVisibility(View.GONE);
+                    emptyState.setVisibility(View.VISIBLE);
+                    recordCount.setText("0");
                     return;
                 }
 
                 allDataItems.clear();
 
                 for (DocumentSnapshot doc : snapshots) {
-                    // Extract fields according to your uploaded data structure
-                    // For example, you might commonly have "Name" and "FATHER_S_NAME" fields
                     String id = doc.getId();
                     String name = doc.contains("Name") ? doc.getString("Name") : "N/A";
                     String fatherName = doc.contains("FATHER_S_NAME") ? doc.getString("FATHER_S_NAME") : "N/A";
@@ -134,16 +132,16 @@ public class DataListActivity extends AppCompatActivity {
                     allDataItems.add(new DataItem(id, name, fatherName));
                 }
 
-                adapter = new DataAdapter(DataListActivity.this, allDataItems);
-                listView.setAdapter(adapter);
-                listView.setVisibility(View.VISIBLE);
-                emptyView.setVisibility(View.GONE);
+                adapter.updateData(allDataItems);
+                recyclerView.setVisibility(View.VISIBLE);
+                emptyState.setVisibility(View.GONE);
+                recordCount.setText(String.valueOf(allDataItems.size()));
             }
         });
     }
 
     private void filterData(String query) {
-        if (adapter == null) return; // safeguard
+        if (adapter == null) return;
 
         String lowerQuery = query.toLowerCase();
 
@@ -157,12 +155,19 @@ public class DataListActivity extends AppCompatActivity {
             }
         }
 
-        adapter.updateData(filtered);  // updateData method should update adapter's list
-        adapter.notifyDataSetChanged();
+        adapter.updateData(filtered);
     }
 
+    private void onItemClicked(DataItem item) {
+        Intent intent = new Intent(DataListActivity.this, DataDetailActivity.class);
+        intent.putExtra("COLLECTION_NAME", collectionName);
+        intent.putExtra("DOCUMENT_ID", item.getDocumentId());
+        startActivity(intent);
+    }
 
-
+    private void onItemLongClicked(DataItem item) {
+        showDeleteConfirmationDialog(item);
+    }
 
     private void showDeleteConfirmationDialog(DataItem item) {
         new AlertDialog.Builder(this)
@@ -178,7 +183,6 @@ public class DataListActivity extends AppCompatActivity {
                 .delete()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Record deleted", Toast.LENGTH_SHORT).show();
-                    // The listener will update the list automatically
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to delete record", Toast.LENGTH_SHORT).show();
@@ -191,12 +195,6 @@ public class DataListActivity extends AppCompatActivity {
         if (firestoreListener != null) {
             firestoreListener.remove();
         }
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
     }
 
     public static class DataItem {
