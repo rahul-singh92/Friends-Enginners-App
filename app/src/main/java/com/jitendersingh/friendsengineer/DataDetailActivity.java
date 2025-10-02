@@ -9,7 +9,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -22,6 +21,8 @@ public class DataDetailActivity extends AppCompatActivity {
     private String collectionName;
     private String documentId;
     private LinearLayout detailContainer;
+    private LinearLayout backButton;
+    private TextView headerSubtitle;
     private FirebaseFirestore firestore;
 
     @Override
@@ -29,8 +30,10 @@ public class DataDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_detail);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        // Hide action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
 
         collectionName = getIntent().getStringExtra("COLLECTION_NAME");
         documentId = getIntent().getStringExtra("DOCUMENT_ID");
@@ -41,13 +44,17 @@ public class DataDetailActivity extends AppCompatActivity {
             return;
         }
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Record Details");
-            getSupportActionBar().setSubtitle("ID: " + documentId);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-
+        // Initialize views
         detailContainer = findViewById(R.id.detail_container);
+        backButton = findViewById(R.id.backButton);
+        headerSubtitle = findViewById(R.id.headerSubtitle);
+
+        // Set document ID in header
+        headerSubtitle.setText("ID: " + documentId);
+
+        // Back button handler
+        backButton.setOnClickListener(v -> finish());
+
         firestore = FirebaseFirestore.getInstance();
 
         loadDocumentDetails();
@@ -60,18 +67,21 @@ public class DataDetailActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to load document: ", e);
                     Toast.makeText(this, "Failed to load details", Toast.LENGTH_SHORT).show();
+                    finish();
                 });
     }
 
     private void displayDocumentFields(DocumentSnapshot document) {
         if (!document.exists()) {
             Toast.makeText(this, "Document does not exist", Toast.LENGTH_SHORT).show();
+            finish();
             return;
         }
 
         Map<String, Object> fields = document.getData();
         if (fields == null || fields.isEmpty()) {
             Toast.makeText(this, "No data found", Toast.LENGTH_SHORT).show();
+            finish();
             return;
         }
 
@@ -85,7 +95,11 @@ public class DataDetailActivity extends AppCompatActivity {
             TextView valueView = itemView.findViewById(R.id.field_value);
 
             labelView.setText(formatFieldName(entry.getKey()));
-            valueView.setText(String.valueOf(entry.getValue()));
+
+            // Format value with proper null handling
+            Object value = entry.getValue();
+            String valueText = (value != null) ? String.valueOf(value) : "N/A";
+            valueView.setText(valueText);
 
             detailContainer.addView(itemView);
         }
@@ -112,11 +126,5 @@ public class DataDetailActivity extends AppCompatActivity {
             }
         }
         return result.toString();
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
     }
 }

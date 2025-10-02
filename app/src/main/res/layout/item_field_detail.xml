@@ -1,28 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/item_field_detail"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/win11_field_card"
     android:orientation="vertical"
-    android:padding="12dp"
-    android:background="?android:attr/selectableItemBackground"
-    android:layout_marginBottom="8dp">
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/field_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Label"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:textColor="#333333" />
+        android:text="Field Name"
+        android:textSize="12sp"
+        android:textColor="#808080"
+        android:textAllCaps="true"
+        android:letterSpacing="0.05"
+        android:fontFamily="sans-serif-medium" />
 
     <TextView
         android:id="@+id/field_value"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Value"
+        android:text="Field Value"
         android:textSize="15sp"
-        android:textColor="#555555"
-        android:layout_marginTop="4dp" />
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="6dp"
+        android:fontFamily="sans-serif"
+        android:lineSpacingExtra="2dp" />
+
 </LinearLayout>
