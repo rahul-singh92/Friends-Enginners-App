@@ -6,8 +6,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.app.AlertDialog;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -130,7 +130,8 @@ public class CredentialsDetailsActivity extends AppCompatActivity {
     }
 
     private void showActionDialog(int position, String docId, Map<String, Object> docData) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Create dark themed action dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DarkAlertDialog);
         builder.setTitle("Choose Action");
         builder.setItems(new CharSequence[]{"Edit", "Delete"}, (dialog, which) -> {
             if (which == 0) {
@@ -152,38 +153,50 @@ public class CredentialsDetailsActivity extends AppCompatActivity {
                 deleteDocument(position, docId);
             }
         });
-        builder.show();
+
+        AlertDialog dialog = builder.create();
+
+        // Additional styling after dialog is created
+        dialog.setOnShowListener(dialogInterface -> {
+            // You can further customize the dialog here if needed
+        });
+
+        dialog.show();
     }
 
     private void deleteDocument(int position, String docId) {
-        new AlertDialog.Builder(this)
-                .setTitle("Confirm Delete")
-                .setMessage("Are you sure you want to delete this user?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    firestore.collection(collectionName)
-                            .document(docId)
-                            .delete()
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(this, "Deleted successfully", Toast.LENGTH_SHORT).show();
-                                documentIds.remove(position);
-                                lastFetchedDocuments.remove(docId);
+        // Create dark themed confirmation dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DarkAlertDialog);
+        builder.setTitle("Confirm Delete");
+        builder.setMessage("Are you sure you want to delete this user?\n\nThis action cannot be undone.");
+        builder.setPositiveButton("Delete", (dialog, which) -> {
+            firestore.collection(collectionName)
+                    .document(docId)
+                    .delete()
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "User deleted successfully", Toast.LENGTH_SHORT).show();
+                        documentIds.remove(position);
+                        lastFetchedDocuments.remove(docId);
 
-                                // Update user count
-                                userCount.setText(String.valueOf(documentIds.size()));
+                        // Update user count
+                        userCount.setText(String.valueOf(documentIds.size()));
 
-                                adapter.notifyDataSetChanged();
+                        adapter.notifyDataSetChanged();
 
-                                // Show empty state if no items left
-                                if (documentIds.isEmpty()) {
-                                    recyclerView.setVisibility(View.GONE);
-                                    emptyState.setVisibility(View.VISIBLE);
-                                }
-                            })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(this, "Failed to delete: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            });
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+                        // Show empty state if no items left
+                        if (documentIds.isEmpty()) {
+                            recyclerView.setVisibility(View.GONE);
+                            emptyState.setVisibility(View.VISIBLE);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Failed to delete: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e("DeleteUser", "Error deleting user", e);
+                    });
+        });
+        builder.setNegativeButton("Cancel", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }
