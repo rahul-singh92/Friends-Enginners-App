@@ -2,13 +2,15 @@ package com.jitendersingh.friendsengineer;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.AlertDialog;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -21,9 +23,12 @@ import java.util.Map;
 public class CredentialsDetailsActivity extends AppCompatActivity {
 
     private TextView headerTextView;
-    private ListView listViewDetails;
-    private ArrayAdapter<String> adapter;
-    private List<String> detailsList;
+    private TextView headerSubtitle;
+    private TextView userCount;
+    private RecyclerView recyclerView;
+    private LinearLayout emptyState;
+    private LinearLayout backButton;
+    private CredentialUserAdapter adapter;
     private Map<String, Map<String, Object>> lastFetchedDocuments = new HashMap<>();
     private List<String> documentIds;
 
@@ -35,8 +40,21 @@ public class CredentialsDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_credentials_details);
 
+        // Hide action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
+        // Initialize views
         headerTextView = findViewById(R.id.headerTextView);
-        listViewDetails = findViewById(R.id.listViewDetails);
+        headerSubtitle = findViewById(R.id.headerSubtitle);
+        userCount = findViewById(R.id.userCount);
+        recyclerView = findViewById(R.id.recyclerViewCredentials);
+        emptyState = findViewById(R.id.emptyState);
+        backButton = findViewById(R.id.backButton);
+
+        // Back button handler
+        backButton.setOnClickListener(v -> finish());
 
         firestore = FirebaseFirestore.getInstance();
         collectionName = getIntent().getStringExtra("collection_name");
@@ -47,20 +65,26 @@ public class CredentialsDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        headerTextView.setText("Credentials Details");
+        // Set header based on collection type
+        if (collectionName.contains("admin")) {
+            headerTextView.setText("Admin Credentials");
+            headerSubtitle.setText("Manage administrator accounts");
+        } else if (collectionName.contains("worker")) {
+            headerTextView.setText("Worker Credentials");
+            headerSubtitle.setText("Manage worker accounts");
+        } else {
+            headerTextView.setText("Credentials Details");
+            headerSubtitle.setText("Manage user credentials");
+        }
 
-        detailsList = new ArrayList<>();
+        // Setup RecyclerView
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         documentIds = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, detailsList);
-        listViewDetails.setAdapter(adapter);
+        adapter = new CredentialUserAdapter(documentIds, lastFetchedDocuments, this::showActionDialog);
+        recyclerView.setAdapter(adapter);
 
         loadCredentials();
-
-        // Long click listener
-        listViewDetails.setOnItemLongClickListener((parent, view, position, id) -> {
-            showActionDialog(position);
-            return true;
-        });
     }
 
     public void loadCredentials() {
@@ -68,37 +92,31 @@ public class CredentialsDetailsActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(this, "No data found in the selected collection", Toast.LENGTH_LONG).show();
+                        recyclerView.setVisibility(View.GONE);
+                        emptyState.setVisibility(View.VISIBLE);
+                        userCount.setText("0");
                         return;
                     }
 
-                    detailsList.clear();
                     documentIds.clear();
                     lastFetchedDocuments.clear();
 
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Map<String, Object> data = document.getData();
-
-                        // Store document data for later use in edit
                         lastFetchedDocuments.put(document.getId(), data);
+                        documentIds.add(document.getId());
+                    }
 
-                        String username = (String) data.get("Username");
-                        String password = (String) data.get("Password");
-                        String name = (String) data.get("Name");
-                        String fatherName = (String) data.get("FATHER_S_NAME");
+                    // Update user count
+                    userCount.setText(String.valueOf(documentIds.size()));
 
-                        if (username == null) username = "N/A";
-                        if (password == null) password = "N/A";
-                        if (name == null) name = "N/A";
-                        if (fatherName == null) fatherName = "N/A";
-
-                        String displayText = "Username: " + username +
-                                "\nPassword: " + password +
-                                "\nName: " + name +
-                                "\nFather's Name: " + fatherName;
-
-                        detailsList.add(displayText);
-                        documentIds.add(document.getId()); // Store Firestore document ID
+                    // Show/hide empty state
+                    if (documentIds.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyState.setVisibility(View.VISIBLE);
+                    } else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyState.setVisibility(View.GONE);
                     }
 
                     adapter.notifyDataSetChanged();
@@ -106,61 +124,60 @@ public class CredentialsDetailsActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     Log.e("FirestoreFetch", "Error fetching documents", e);
                     Toast.makeText(this, "Error loading data: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    recyclerView.setVisibility(View.GONE);
+                    emptyState.setVisibility(View.VISIBLE);
                 });
     }
 
-    private void showActionDialog(int position) {
+    private void showActionDialog(int position, String docId, Map<String, Object> docData) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Choose Action");
         builder.setItems(new CharSequence[]{"Edit", "Delete"}, (dialog, which) -> {
             if (which == 0) {
                 // Edit
-                if (position >= 0 && position < documentIds.size()) {
-                    String docId = documentIds.get(position);
-                    Map<String, Object> docData = lastFetchedDocuments.get(docId);
+                if (docData != null) {
+                    String username = (String) docData.get("Username");
+                    String password = (String) docData.get("Password");
+                    String name = (String) docData.get("Name");
+                    String fatherName = (String) docData.get("FATHER_S_NAME");
 
-                    if (docData != null) {
-                        String username = (String) docData.get("Username");
-                        String password = (String) docData.get("Password");
-                        String name = (String) docData.get("Name");
-                        String fatherName = (String) docData.get("FATHER_S_NAME");
-
-                        EditCredentialBottomSheet editSheet = EditCredentialBottomSheet.newInstance(
-                                collectionName, docId, username, password, name, fatherName);
-                        editSheet.show(getSupportFragmentManager(), "edit_credential");
-                    } else {
-                        Toast.makeText(this, "Document data not found for editing", Toast.LENGTH_SHORT).show();
-                    }
+                    EditCredentialBottomSheet editSheet = EditCredentialBottomSheet.newInstance(
+                            collectionName, docId, username, password, name, fatherName);
+                    editSheet.show(getSupportFragmentManager(), "edit_credential");
+                } else {
+                    Toast.makeText(this, "Document data not found for editing", Toast.LENGTH_SHORT).show();
                 }
             } else if (which == 1) {
                 // Delete
-                deleteDocument(position);
+                deleteDocument(position, docId);
             }
         });
         builder.show();
     }
 
-    private void deleteDocument(int position) {
-        if (position < 0 || position >= documentIds.size()) {
-            Toast.makeText(this, "Invalid item", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String docId = documentIds.get(position);
-
+    private void deleteDocument(int position, String docId) {
         new AlertDialog.Builder(this)
                 .setTitle("Confirm Delete")
-                .setMessage("Are you sure you want to delete this entry?")
+                .setMessage("Are you sure you want to delete this user?")
                 .setPositiveButton("Delete", (dialog, which) -> {
                     firestore.collection(collectionName)
                             .document(docId)
                             .delete()
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(this, "Deleted successfully", Toast.LENGTH_SHORT).show();
-                                detailsList.remove(position);
                                 documentIds.remove(position);
                                 lastFetchedDocuments.remove(docId);
+
+                                // Update user count
+                                userCount.setText(String.valueOf(documentIds.size()));
+
                                 adapter.notifyDataSetChanged();
+
+                                // Show empty state if no items left
+                                if (documentIds.isEmpty()) {
+                                    recyclerView.setVisibility(View.GONE);
+                                    emptyState.setVisibility(View.VISIBLE);
+                                }
                             })
                             .addOnFailureListener(e -> {
                                 Toast.makeText(this, "Failed to delete: " + e.getMessage(), Toast.LENGTH_LONG).show();
