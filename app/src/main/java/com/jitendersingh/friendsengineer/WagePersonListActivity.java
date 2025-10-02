@@ -2,10 +2,15 @@ package com.jitendersingh.friendsengineer;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,14 +27,27 @@ public class WagePersonListActivity extends AppCompatActivity {
     private List<PersonData> persons;
     private FirebaseFirestore firestore;
     private String collectionName;
+    private TextView headerTitle;
+    private TextView workerCount;
+    private LinearLayout emptyState;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wage_person_list);
 
+        // Initialize views
+        headerTitle = findViewById(R.id.headerTitle);
+        workerCount = findViewById(R.id.workerCount);
+        emptyState = findViewById(R.id.emptyState);
         recyclerView = findViewById(R.id.recyclerViewPersons);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Add divider between items
+        DividerItemDecoration divider = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
+        divider.setDrawable(ContextCompat.getDrawable(this, R.drawable.divider_line));
+        recyclerView.addItemDecoration(divider);
 
         persons = new ArrayList<>();
         adapter = new PersonAdapter(persons, this::onPersonClicked);
@@ -44,8 +62,20 @@ public class WagePersonListActivity extends AppCompatActivity {
             return;
         }
 
-        setTitle(collectionName);
+        // Set header title with formatted name
+        String displayName = formatCollectionName(collectionName);
+        headerTitle.setText(displayName);
+
         loadPersons();
+    }
+
+    private String formatCollectionName(String name) {
+        // Remove "wage_collection_" prefix if exists
+        if (name.startsWith("wage_collection_")) {
+            name = name.substring(16);
+        }
+        // Replace underscores with spaces and capitalize
+        return name.replace("_", " ").toUpperCase();
     }
 
     private void loadPersons() {
@@ -65,9 +95,26 @@ public class WagePersonListActivity extends AppCompatActivity {
 
                         persons.add(new PersonData(id, name, fatherName, pdfUrl, pdfPage));
                     }
+
+                    // Update worker count
+                    workerCount.setText(String.valueOf(persons.size()));
+
+                    // Show/hide empty state
+                    if (persons.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyState.setVisibility(View.VISIBLE);
+                    } else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyState.setVisibility(View.GONE);
+                    }
+
                     adapter.notifyDataSetChanged();
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to load persons", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to load persons", Toast.LENGTH_SHORT).show();
+                    emptyState.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                });
     }
 
     private void onPersonClicked(PersonData person) {

@@ -3,7 +3,6 @@ package com.jitendersingh.friendsengineer;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,27 +20,22 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.List;
 
-public class ViewPdfPageActivity extends AppCompatActivity {
+public class PdfWebViewActivity extends AppCompatActivity {
     private static final String TAG = "ViewPdfPageActivity";
 
     private String pdfUrl;
     private int pdfPage;
+    private String personName;
     private ProgressDialog progressDialog;
-    private File savedPdfFile;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_pdf_page);
 
         pdfUrl = getIntent().getStringExtra("pdfUrl");
         pdfPage = getIntent().getIntExtra("pdfPage", 1);
-
-        Log.d(TAG, "=== PDF ACTIVITY STARTED ===");
-        Log.d(TAG, "PDF URL: " + pdfUrl);
-        Log.d(TAG, "PDF Page: " + pdfPage);
+        personName = getIntent().getStringExtra("personName");
 
         if (pdfUrl == null) {
             Toast.makeText(this, "PDF URL missing", Toast.LENGTH_SHORT).show();
@@ -49,10 +43,12 @@ public class ViewPdfPageActivity extends AppCompatActivity {
             return;
         }
 
+        Log.d(TAG, "PDF URL: " + pdfUrl + ", Page: " + pdfPage);
+
         PDFBoxResourceLoader.init(getApplicationContext());
 
         progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Loading PDF...");
+        progressDialog.setMessage("Preparing wage slip...");
         progressDialog.setCancelable(false);
         progressDialog.show();
 
@@ -97,19 +93,19 @@ public class ViewPdfPageActivity extends AppCompatActivity {
                 pdfDir.mkdirs();
             }
 
-            savedPdfFile = new File(pdfDir, "wage_slip_page_" + pdfPage + ".pdf");
-            Log.d(TAG, "Saving PDF to: " + savedPdfFile.getAbsolutePath());
+            File outputFile = new File(pdfDir, "wage_slip_page_" + pdfPage + ".pdf");
+            Log.d(TAG, "Saving to: " + outputFile.getAbsolutePath());
 
-            singlePageDoc.save(savedPdfFile);
+            singlePageDoc.save(outputFile);
             singlePageDoc.close();
             document.close();
             inputStream.close();
 
-            if (savedPdfFile.exists() && savedPdfFile.length() > 0) {
-                Log.d(TAG, "PDF saved successfully, size: " + savedPdfFile.length());
+            if (outputFile.exists() && outputFile.length() > 0) {
+                Log.d(TAG, "PDF saved successfully, size: " + outputFile.length());
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
-                    openPdfWithFallbacks();
+                    openPdfWithChooser(outputFile);
                 });
             } else {
                 throw new Exception("PDF file not created");
@@ -125,95 +121,58 @@ public class ViewPdfPageActivity extends AppCompatActivity {
         }
     }
 
-    private void openPdfWithFallbacks() {
-        // Method 1: Try native PDF viewer
-        if (tryOpenWithPdfViewer()) {
-            Log.d(TAG, "Opening with native PDF viewer");
-            return;
-        }
-
-        // Method 2: Show dialog with options
-        showPdfViewOptions();
-    }
-
-    private boolean tryOpenWithPdfViewer() {
+    private void openPdfWithChooser(File pdfFile) {
         try {
-            // Check if any PDF viewer is available
-            Intent testIntent = new Intent(Intent.ACTION_VIEW);
-            testIntent.setType("application/pdf");
-            List<?> list = getPackageManager().queryIntentActivities(testIntent, PackageManager.MATCH_DEFAULT_ONLY);
+            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", pdfFile);
+            Log.d(TAG, "FileProvider URI: " + uri);
+            Log.d(TAG, "File exists: " + pdfFile.exists() + ", Size: " + pdfFile.length());
 
-            if (list.size() > 0) {
-                Log.d(TAG, "PDF viewer found: " + list.size() + " app(s)");
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri, "application/pdf");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 
-                Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", savedPdfFile);
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(uri, "application/pdf");
-                intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            // Create chooser to show all available PDF viewers
+            String title = personName != null ? personName + " - Wage Slip" : "Open Wage Slip";
+            Intent chooser = Intent.createChooser(intent, title);
 
-                startActivity(intent);
-                return true;
-            }
+            // Just try to start the chooser - let Android handle if apps exist
+            startActivity(chooser);
+            Log.d(TAG, "PDF chooser opened successfully");
+
+            // Don't finish immediately - wait a moment for user to see chooser
+            new android.os.Handler().postDelayed(this::finish, 1000);
+
+        } catch (ActivityNotFoundException e) {
+            // This exception is thrown if NO apps can handle the intent
+            Log.e(TAG, "No PDF viewer apps found", e);
+            showInstallPdfViewerDialog();
         } catch (Exception e) {
-            Log.e(TAG, "Error opening with PDF viewer: " + e.getMessage());
+            Log.e(TAG, "Error opening PDF: " + e.getMessage(), e);
+            Toast.makeText(this, "Error opening PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            showInstallPdfViewerDialog();
         }
-        return false;
     }
 
-    private void showPdfViewOptions() {
+    private void showInstallPdfViewerDialog() {
         new AlertDialog.Builder(this)
-                .setTitle("View Wage Slip")
-                .setMessage("Choose how to view your wage slip:")
-                .setPositiveButton("Open in Browser", (dialog, which) -> openInBrowser())
-                .setNegativeButton("Download PDF Viewer", (dialog, which) -> openPlayStoreForPdfViewer())
-                .setNeutralButton("Cancel", (dialog, which) -> finish())
+                .setTitle("PDF Viewer Required")
+                .setMessage("To view wage slips, please install a free PDF viewer app from Play Store.\n\nRecommended: Adobe Acrobat Reader or Google PDF Viewer")
+                .setPositiveButton("Install PDF Viewer", (dialog, which) -> openPlayStoreForPdfViewer())
+                .setNegativeButton("Cancel", (dialog, which) -> finish())
                 .setCancelable(false)
                 .show();
     }
 
-    private void openInBrowser() {
-        try {
-            // Use Google Docs viewer to display PDF in browser
-            String googleDocsUrl = "https://docs.google.com/gview?embedded=true&url=" + pdfUrl;
-
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW);
-            browserIntent.setData(Uri.parse(googleDocsUrl));
-
-            // Try to open specifically in Chrome if available
-            try {
-                browserIntent.setPackage("com.android.chrome");
-                startActivity(browserIntent);
-                Log.d(TAG, "Opened in Chrome browser");
-            } catch (ActivityNotFoundException e) {
-                // Chrome not found, use default browser
-                browserIntent.setPackage(null);
-                startActivity(browserIntent);
-                Log.d(TAG, "Opened in default browser");
-            }
-
-            Toast.makeText(this, "Opening wage slip in browser...", Toast.LENGTH_SHORT).show();
-            finish();
-
-        } catch (Exception e) {
-            Log.e(TAG, "Error opening in browser: " + e.getMessage());
-            Toast.makeText(this, "Unable to open browser", Toast.LENGTH_SHORT).show();
-            openPlayStoreForPdfViewer();
-        }
-    }
-
     private void openPlayStoreForPdfViewer() {
         try {
-            // Direct user to install a free PDF viewer
+            // Open Play Store with PDF viewer search results
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse("market://search?q=pdf viewer&c=apps"));
             startActivity(intent);
-
-            Toast.makeText(this, "Please install a PDF viewer app", Toast.LENGTH_LONG).show();
             finish();
-
         } catch (ActivityNotFoundException e) {
-            // Play Store not available, open web version
+            // Play Store not available, use web
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse("https://play.google.com/store/search?q=pdf viewer&c=apps"));
             startActivity(intent);

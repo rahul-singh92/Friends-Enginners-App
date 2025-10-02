@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- App-specific external storage - no permission needed -->
+    <external-files-path name="external_app_files" path="." />
+
+    <!-- Specific PDF directory -->
+    <external-files-path name="pdf_files" path="PDFs/" />
+
+    <!-- Legacy paths (if needed for other features) -->
     <external-path name="external_files" path="." />
+    <external-cache-path name="external_cache" path="." />
 </paths>

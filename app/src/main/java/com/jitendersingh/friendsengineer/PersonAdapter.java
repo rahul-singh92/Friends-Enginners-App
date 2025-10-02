@@ -10,14 +10,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder> {
-
-    public interface OnPersonClickListener {
-        void onClick(WagePersonListActivity.PersonData person);
-    }
+public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.PersonViewHolder> {
 
     private List<WagePersonListActivity.PersonData> persons;
     private OnPersonClickListener listener;
+
+    public interface OnPersonClickListener {
+        void onPersonClick(WagePersonListActivity.PersonData person);
+    }
 
     public PersonAdapter(List<WagePersonListActivity.PersonData> persons, OnPersonClickListener listener) {
         this.persons = persons;
@@ -26,18 +26,34 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
 
     @NonNull
     @Override
-    public PersonAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public PersonViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(android.R.layout.simple_list_item_2, parent, false);
-        return new ViewHolder(view, listener);
+                .inflate(R.layout.item_person, parent, false);
+        return new PersonViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull PersonAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull PersonViewHolder holder, int position) {
         WagePersonListActivity.PersonData person = persons.get(position);
-        holder.text1.setText(person.getName());
-        holder.text2.setText("Father: " + person.getFatherName());
-        holder.itemView.setTag(person);
+
+        holder.nameText.setText(person.getName() != null ? person.getName() : "Unknown");
+        holder.fatherNameText.setText(person.getFatherName() != null ?
+                "Father: " + person.getFatherName() : "");
+        holder.pageInfo.setText("Page " + person.getPdfPage());
+
+        // Set initial letter
+        String name = person.getName();
+        if (name != null && !name.isEmpty()) {
+            holder.initial.setText(String.valueOf(name.charAt(0)).toUpperCase());
+        } else {
+            holder.initial.setText("?");
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onPersonClick(person);
+            }
+        });
     }
 
     @Override
@@ -45,20 +61,15 @@ public class PersonAdapter extends RecyclerView.Adapter<PersonAdapter.ViewHolder
         return persons.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView text1, text2;
+    static class PersonViewHolder extends RecyclerView.ViewHolder {
+        TextView nameText, fatherNameText, pageInfo, initial;
 
-        public ViewHolder(@NonNull View itemView, OnPersonClickListener listener) {
+        PersonViewHolder(@NonNull View itemView) {
             super(itemView);
-            text1 = itemView.findViewById(android.R.id.text1);
-            text2 = itemView.findViewById(android.R.id.text2);
-
-            itemView.setOnClickListener(v -> {
-                WagePersonListActivity.PersonData person = (WagePersonListActivity.PersonData) v.getTag();
-                if (listener != null) {
-                    listener.onClick(person);
-                }
-            });
+            nameText = itemView.findViewById(R.id.personName);
+            fatherNameText = itemView.findViewById(R.id.personFatherName);
+            pageInfo = itemView.findViewById(R.id.personPageInfo);
+            initial = itemView.findViewById(R.id.personInitial);
         }
     }
 }

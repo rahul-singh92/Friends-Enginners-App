@@ -1,11 +1,14 @@
 package com.jitendersingh.friendsengineer;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,12 +18,17 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class LoginActivity extends Activity {
+    private static final int STORAGE_PERMISSION_CODE = 2001;
+
     EditText usernameField, passwordField;
     Button loginBtn;
 
@@ -42,6 +50,9 @@ public class LoginActivity extends Activity {
 
         if (!policyAccepted) {
             showPrivacyPolicyDialog();
+        } else {
+            // Privacy policy already accepted, check for storage permission
+            requestStoragePermissionIfNeeded();
         }
 
         loginBtn.setOnClickListener(view -> {
@@ -75,7 +86,7 @@ public class LoginActivity extends Activity {
                                 getSharedPreferences("UserPrefs", MODE_PRIVATE)
                                         .edit()
                                         .putBoolean("isAdmin", true)
-                                        .putString("logged_in_username",username)
+                                        .putString("logged_in_username", username)
                                         .apply();
 
                                 startActivity(new Intent(LoginActivity.this, AdminActivity.class));
@@ -106,7 +117,7 @@ public class LoginActivity extends Activity {
 
         // Privacy policy link click
         privacyLink.setOnClickListener(v -> {
-            String privacyUrl = "https://github.com/rahul-singh92/Friends-Enginners-App/blob/main/privacy_policy.md"; // Replace with your actual GitHub privacy policy URL
+            String privacyUrl = "https://github.com/rahul-singh92/Friends-Enginners-App/blob/main/privacy_policy.md";
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(privacyUrl));
             startActivity(intent);
         });
@@ -128,10 +139,47 @@ public class LoginActivity extends Activity {
                 SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
                 prefs.edit().putBoolean("privacy_policy_accepted", true).apply();
                 dialog.dismiss();
+
+                // Request storage permission after privacy policy accepted
+                requestStoragePermissionIfNeeded();
             }
         });
 
         dialog.show();
+    }
+
+    private void requestStoragePermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+ requires READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, READ_MEDIA_AUDIO
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{
+                                Manifest.permission.READ_MEDIA_IMAGES,
+                                Manifest.permission.READ_MEDIA_VIDEO,
+                                Manifest.permission.READ_MEDIA_AUDIO
+                        },
+                        STORAGE_PERMISSION_CODE);
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Android 6.0 to Android 12
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                        STORAGE_PERMISSION_CODE);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Storage permission granted. You can now view PDFs.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Storage permission denied. PDF viewing may not work properly.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private void checkWorkerCredentials(FirebaseFirestore db, String username, String password, TextView errorText) {
@@ -153,7 +201,7 @@ public class LoginActivity extends Activity {
                             getSharedPreferences("UserPrefs", MODE_PRIVATE)
                                     .edit()
                                     .putBoolean("isAdmin", false)
-                                    .putString("logged_in_username",username)
+                                    .putString("logged_in_username", username)
                                     .apply();
 
                             Intent intent = new Intent(LoginActivity.this, WorkerActivity.class);

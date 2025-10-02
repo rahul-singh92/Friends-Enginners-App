@@ -2,9 +2,29 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jitendersingh.friendsengineer"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="application/pdf" />
+        </intent>
+    </queries>
+
+    <!-- Permissions for Android 6.0 to Android 12 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"
+        tools:ignore="ScopedStorage" />
+
+    <!-- Permissions for Android 13+ (API 33+) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
+
+    <!-- Internet permission -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -16,20 +36,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FriendsEngineer"
         tools:targetApi="31">
+
         <!-- Splash Screen Activity (Launcher Activity) -->
         <activity
             android:name=".SplashScreenActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity android:name=".LoginActivity" />
-        <!-- Admin Activity-->
         <activity android:name=".AdminActivity" />
-        <!-- Main Activity -->
         <activity android:name=".WorkerActivity" />
         <activity android:name=".TableListActivity" />
         <activity android:name=".DataListActivity" />
@@ -43,15 +62,20 @@
         <activity android:name=".WorkerDetailActivity" />
         <activity android:name=".WorkerDetailsActivity" />
         <activity android:name=".WorkerScheduleActivity" />
+        <activity android:name=".PdfWebViewActivity"
+            android:label="View Wage Slip"/>
+
+        <!-- FileProvider for sharing files -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-        <meta-data
-            android:name="android.support.FILE_PROVIDER_PATHS"
-            android:resource="@xml/file_paths" />
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
         </provider>
+
         <activity android:name=".WageCollectionsActivity" />
         <activity android:name=".WagePersonListActivity" />
         <activity android:name=".ViewPdfPageActivity" />
@@ -63,7 +87,6 @@
             android:exported="false" />
         <activity android:name=".MessageActivity" />
         <activity android:name=".MessageViewOnlyActivity" />
-
 
     </application>
 
