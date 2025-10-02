@@ -1,11 +1,13 @@
 package com.jitendersingh.friendsengineer;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,24 +19,39 @@ import java.util.List;
 
 public class BranchPdfListActivity extends AppCompatActivity {
 
-    RecyclerView recyclerView;
-    PdfAdapter adapter;
-    List<PdfModel> pdfList;
-
-    String branchName;
+    private RecyclerView recyclerView;
+    private LinearLayout emptyState;
+    private LinearLayout backButton;
+    private TextView headerSubtitle;
+    private TextView scheduleCount;
+    private TextView emptyMessage;
+    private PdfAdapter adapter;
+    private List<PdfModel> pdfList;
+    private String branchName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_branch_pdf_list);
 
+        // Hide action bar for modern look
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
+        // Initialize views
         recyclerView = findViewById(R.id.recycler_pdf_list);
+        emptyState = findViewById(R.id.emptyState);
+        backButton = findViewById(R.id.backButton);
+        headerSubtitle = findViewById(R.id.headerSubtitle);
+        scheduleCount = findViewById(R.id.scheduleCount);
+        emptyMessage = findViewById(R.id.emptyMessage);
+
+        // Back button handler
+        backButton.setOnClickListener(v -> finish());
+
+        // Setup RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
-                DividerItemDecoration.VERTICAL);
-        recyclerView.addItemDecoration(dividerItemDecoration);
-
 
         pdfList = new ArrayList<>();
         adapter = new PdfAdapter(pdfList, this);
@@ -43,9 +60,14 @@ public class BranchPdfListActivity extends AppCompatActivity {
         branchName = getIntent().getStringExtra("branchName");
 
         if (branchName != null) {
+            // Set branch name in header
+            headerSubtitle.setText(branchName);
+            emptyMessage.setText("No schedules for " + branchName + " yet");
+
             fetchPdfsForBranch(branchName);
         } else {
             Toast.makeText(this, "Branch not selected", Toast.LENGTH_SHORT).show();
+            finish();
         }
     }
 
@@ -70,14 +92,27 @@ public class BranchPdfListActivity extends AppCompatActivity {
                         }
                     }
 
+                    // Update schedule count
+                    scheduleCount.setText(String.valueOf(pdfList.size()));
+
+                    // Show/hide empty state
                     if (pdfList.isEmpty()) {
-                        Toast.makeText(this, "No schedules found for " + branch, Toast.LENGTH_SHORT).show();
+                        recyclerView.setVisibility(View.GONE);
+                        emptyState.setVisibility(View.VISIBLE);
+                    } else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyState.setVisibility(View.GONE);
                     }
 
                     adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to load schedules: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    // Show empty state on error
+                    recyclerView.setVisibility(View.GONE);
+                    emptyState.setVisibility(View.VISIBLE);
+                    scheduleCount.setText("0");
                 });
     }
 }

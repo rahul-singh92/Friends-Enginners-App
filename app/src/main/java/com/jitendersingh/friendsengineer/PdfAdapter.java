@@ -26,23 +26,39 @@ public class PdfAdapter extends RecyclerView.Adapter<PdfAdapter.ViewHolder> {
 
     @NonNull
     @Override
-    public PdfAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_2, parent, false);
-        return new ViewHolder(v);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_schedule_pdf, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull PdfAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         PdfModel pdf = pdfList.get(position);
 
-        holder.title.setText(pdf.getDocumentId());
-        holder.subtitle.setText("From: " + pdf.getStartDate() + " To: " + pdf.getEndDate());
+        // Format dates
+        String startDate = (pdf.getStartDate() != null && !pdf.getStartDate().isEmpty())
+                ? pdf.getStartDate() : "N/A";
+        String endDate = (pdf.getEndDate() != null && !pdf.getEndDate().isEmpty())
+                ? pdf.getEndDate() : "N/A";
 
+        // Set date range as main text
+        holder.dateRangeText.setText(startDate + " → " + endDate);
+
+        // Set individual dates in badges
+        holder.startDateText.setText("Start: " + startDate);
+        holder.endDateText.setText("End: " + endDate);
+
+        // Click listener to open PDF
         holder.itemView.setOnClickListener(v -> {
-            if (pdf.getPdfUrl() != null) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(pdf.getPdfUrl()));
-                context.startActivity(intent);
+            if (pdf.getPdfUrl() != null && !pdf.getPdfUrl().isEmpty()) {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(pdf.getPdfUrl()));
+                    context.startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(context, "Unable to open PDF", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 Toast.makeText(context, "PDF URL not available", Toast.LENGTH_SHORT).show();
             }
@@ -54,14 +70,16 @@ public class PdfAdapter extends RecyclerView.Adapter<PdfAdapter.ViewHolder> {
         return pdfList.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView dateRangeText;
+        TextView startDateText;
+        TextView endDateText;
 
-        TextView title, subtitle;
-
-        public ViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
-            title = itemView.findViewById(android.R.id.text1);
-            subtitle = itemView.findViewById(android.R.id.text2);
+            dateRangeText = itemView.findViewById(R.id.scheduleDateRange);
+            startDateText = itemView.findViewById(R.id.scheduleStartDate);
+            endDateText = itemView.findViewById(R.id.scheduleEndDate);
         }
     }
 }
