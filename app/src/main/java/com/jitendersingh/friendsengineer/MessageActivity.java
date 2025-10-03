@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
@@ -75,14 +74,25 @@ public class MessageActivity extends AppCompatActivity {
                         Toast.makeText(this, "Listen failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if (queryDocumentSnapshots != null) {
-                        for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
-                            if (dc.getType() == DocumentChange.Type.ADDED) {
-                                ChatMessage message = dc.getDocument().toObject(ChatMessage.class);
+
+                    if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                        // Clear the list
+                        messageList.clear();
+
+                        // Get all documents (not just changes)
+                        queryDocumentSnapshots.forEach(doc -> {
+                            ChatMessage message = doc.toObject(ChatMessage.class);
+                            if (message != null && message.getText() != null) {
                                 messageList.add(message);
-                                chatAdapter.notifyItemInserted(messageList.size() - 1);
-                                recyclerView.scrollToPosition(messageList.size() - 1);
                             }
+                        });
+
+                        // Update adapter
+                        chatAdapter.updateMessages(messageList);
+
+                        // Scroll to bottom
+                        if (chatAdapter.getItemCount() > 0) {
+                            recyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
                         }
                     }
                 });
