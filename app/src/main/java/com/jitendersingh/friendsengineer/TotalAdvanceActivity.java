@@ -1,6 +1,7 @@
 package com.jitendersingh.friendsengineer;
 
 import android.os.Bundle;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,7 +23,9 @@ import java.util.Map;
 public class TotalAdvanceActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
-    private TextView noDataText;
+    private LinearLayout emptyStateLayout;
+    private LinearLayout backButton;
+    private TextView workerCount;
     private TotalAdvanceAdapter adapter;
     private List<Worker> totalAdvanceList;
     private FirebaseFirestore firestore;
@@ -32,8 +35,19 @@ public class TotalAdvanceActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_total_advance);
 
+        // Hide action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
+        // Initialize views
         recyclerView = findViewById(R.id.recycler_total_advance);
-        noDataText = findViewById(R.id.text_no_data);
+        emptyStateLayout = findViewById(R.id.emptyStateLayout);
+        backButton = findViewById(R.id.backButton);
+        workerCount = findViewById(R.id.workerCount);
+
+        // Back button handler
+        backButton.setOnClickListener(v -> finish());
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         firestore = FirebaseFirestore.getInstance();
@@ -47,8 +61,9 @@ public class TotalAdvanceActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (querySnapshot.isEmpty()) {
-                        noDataText.setVisibility(TextView.VISIBLE);
+                        emptyStateLayout.setVisibility(LinearLayout.VISIBLE);
                         recyclerView.setVisibility(RecyclerView.GONE);
+                        workerCount.setText("0");
                         return;
                     }
 
@@ -85,11 +100,14 @@ public class TotalAdvanceActivity extends AppCompatActivity {
                         );
                     }
 
+                    // Update worker count
+                    workerCount.setText(String.valueOf(totalAdvanceList.size()));
+
                     if (totalAdvanceList.isEmpty()) {
-                        noDataText.setVisibility(TextView.VISIBLE);
+                        emptyStateLayout.setVisibility(LinearLayout.VISIBLE);
                         recyclerView.setVisibility(RecyclerView.GONE);
                     } else {
-                        noDataText.setVisibility(TextView.GONE);
+                        emptyStateLayout.setVisibility(LinearLayout.GONE);
                         recyclerView.setVisibility(RecyclerView.VISIBLE);
                         adapter = new TotalAdvanceAdapter(totalAdvanceList);
                         recyclerView.setAdapter(adapter);
@@ -97,8 +115,9 @@ public class TotalAdvanceActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to load data: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    noDataText.setVisibility(TextView.VISIBLE);
+                    emptyStateLayout.setVisibility(LinearLayout.VISIBLE);
                     recyclerView.setVisibility(RecyclerView.GONE);
+                    workerCount.setText("0");
                 });
     }
 }
