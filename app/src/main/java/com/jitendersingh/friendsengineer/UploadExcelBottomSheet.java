@@ -1,6 +1,7 @@
 package com.jitendersingh.friendsengineer;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
@@ -11,12 +12,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -36,120 +43,184 @@ public class UploadExcelBottomSheet extends BottomSheetDialogFragment {
 
     private static final int FILE_SELECT_CODE = 100;
     private Uri selectedFileUri;
-    private Button btnSelectFile, btnUpload;
+    private TextView btnSelectFile, btnSubmit, cancelButton, selectedFileName;
+    private ImageView closeButton;
+    private Spinner spinnerSheetType, spinnerYear, spinnerMonth;
     private FirebaseFirestore firestore;
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+
+        dialog.setOnShowListener(dialogInterface -> {
+            BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) dialogInterface;
+            FrameLayout bottomSheet = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+
+            if (bottomSheet != null) {
+                BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
+                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setDraggable(false);
+                behavior.setSkipCollapsed(true);
+            }
+        });
+
+        return dialog;
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.bottom_sheet_upload, container, false);
 
+        // Initialize views
         btnSelectFile = view.findViewById(R.id.btn_select_file);
-        btnUpload = view.findViewById(R.id.btn_submit);
+        btnSubmit = view.findViewById(R.id.btn_submit);
+        cancelButton = view.findViewById(R.id.cancelButton);
+        closeButton = view.findViewById(R.id.closeButton);
+        selectedFileName = view.findViewById(R.id.selectedFileName);
+        spinnerSheetType = view.findViewById(R.id.spinner_sheet_type);
+        spinnerYear = view.findViewById(R.id.spinner_year);
+        spinnerMonth = view.findViewById(R.id.spinner_month);
 
         firestore = FirebaseFirestore.getInstance();
 
+        // Setup dark theme spinners
+        setupSpinners();
+
+        // Close button
+        closeButton.setOnClickListener(v -> dismiss());
+
+        // Cancel button
+        cancelButton.setOnClickListener(v -> dismiss());
+
+        // Select file button
         btnSelectFile.setOnClickListener(v -> openFileChooser());
-        btnUpload.setOnClickListener(v -> {
-            if (selectedFileUri != null) {
-                ProgressDialog progressDialog = new ProgressDialog(getContext());
-                progressDialog.setMessage("Uploading...");
-                progressDialog.setCancelable(false);
-                progressDialog.show();
 
-                new Thread(() -> {
-                    try {
-                        InputStream inputStream = getContext().getContentResolver().openInputStream(selectedFileUri);
-                        if (inputStream == null) throw new Exception("Unable to open file stream");
-
-                        Workbook workbook = selectedFileUri.toString().endsWith(".xls")
-                                ? new HSSFWorkbook(inputStream)
-                                : new XSSFWorkbook(inputStream);
-                        Sheet sheet = workbook.getSheetAt(0);
-                        if (sheet == null) throw new Exception("Sheet is null");
-
-                        List<String> columnNames = new ArrayList<>();
-                        List<List<String>> extractedData = new ArrayList<>();
-
-                        boolean isHeader = true;
-                        for (Row row : sheet) {
-                            if (isHeader) {
-                                for (Cell cell : row) {
-                                    columnNames.add(cell.getStringCellValue().trim().replaceAll("[^a-zA-Z0-9_]", "_"));
-                                }
-                                isHeader = false;
-                            } else {
-                                List<String> rowData = new ArrayList<>();
-                                for (int i = 0; i < columnNames.size(); i++) {
-                                    rowData.add(getCellValue(row.getCell(i)));
-                                }
-                                extractedData.add(rowData);
-                            }
-                        }
-
-                        workbook.close();
-                        inputStream.close();
-
-                        Spinner spinnerSheetType = getView().findViewById(R.id.spinner_sheet_type);
-                        Spinner spinnerYear = getView().findViewById(R.id.spinner_year);
-                        Spinner spinnerMonth = getView().findViewById(R.id.spinner_month);
-                        String selectedSheetType = spinnerSheetType.getSelectedItem().toString();
-                        String selectedYear = spinnerYear.getSelectedItem().toString();
-                        String selectedMonth = spinnerMonth.getSelectedItem().toString();
-
-                        // Create collection name from sheetType, year, month
-                        String collectionName = selectedSheetType + selectedYear + selectedMonth;
-
-                        // Save the collection name into a dedicated collection "CollectionsList"
-                        Map<String, Object> collectionReminder = new HashMap<>();
-                        collectionReminder.put("name", collectionName);
-
-                        firestore.collection("CollectionsList")
-                                .document(collectionName) // avoid duplicates by using collectionName as docId
-                                .set(collectionReminder)
-                                .addOnSuccessListener(aVoid -> Log.d("Firestore", "Collection name saved"))
-                                .addOnFailureListener(e -> Log.e("Firestore", "Error saving collection name", e));
-
-                        // Save each row as a document inside the collectionName collection
-                        for (List<String> rowData : extractedData) {
-                            Map<String, Object> dataMap = new HashMap<>();
-                            for (int i = 0; i < columnNames.size(); i++) {
-                                dataMap.put(columnNames.get(i), rowData.get(i));
-                            }
-                            // Additional metadata can be omitted here as collection name encodes it
-
-                            firestore.collection(collectionName)
-                                    .add(dataMap)
-                                    .addOnSuccessListener(documentReference -> {
-                                        Log.d("Firestore", "Document written with ID: " + documentReference.getId());
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        Log.e("Firestore", "Error adding document", e);
-                                    });
-                        }
-
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                progressDialog.dismiss();
-                                Toast.makeText(getContext(), "Data uploaded successfully", Toast.LENGTH_SHORT).show();
-                                dismiss();
-                            });
-                        }
-                    } catch (Exception e) {
-                        Log.e("ExcelDebug", "Error processing file: ", e);
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            });
-                        }
-                    }
-                }).start();
-            } else {
-                Toast.makeText(getContext(), "Please select a file first", Toast.LENGTH_SHORT).show();
-            }
-        });
+        // Upload button
+        btnSubmit.setOnClickListener(v -> uploadFile());
 
         return view;
+    }
+
+    private void setupSpinners() {
+        // Create custom adapters with dark theme
+        ArrayAdapter<CharSequence> sheetTypeAdapter = ArrayAdapter.createFromResource(
+                requireContext(),
+                R.array.sheet_type_array,
+                R.layout.spinner_item_dark
+        );
+        sheetTypeAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item_dark);
+        spinnerSheetType.setAdapter(sheetTypeAdapter);
+
+        ArrayAdapter<CharSequence> yearAdapter = ArrayAdapter.createFromResource(
+                requireContext(),
+                R.array.years_array,
+                R.layout.spinner_item_dark
+        );
+        yearAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item_dark);
+        spinnerYear.setAdapter(yearAdapter);
+
+        ArrayAdapter<CharSequence> monthAdapter = ArrayAdapter.createFromResource(
+                requireContext(),
+                R.array.sheet_month,
+                R.layout.spinner_item_dark
+        );
+        monthAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item_dark);
+        spinnerMonth.setAdapter(monthAdapter);
+    }
+
+    private void uploadFile() {
+        if (selectedFileUri != null) {
+            ProgressDialog progressDialog = new ProgressDialog(getContext(), R.style.DarkAlertDialog);
+            progressDialog.setMessage("Uploading...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+
+            new Thread(() -> {
+                try {
+                    InputStream inputStream = getContext().getContentResolver().openInputStream(selectedFileUri);
+                    if (inputStream == null) throw new Exception("Unable to open file stream");
+
+                    Workbook workbook = selectedFileUri.toString().endsWith(".xls")
+                            ? new HSSFWorkbook(inputStream)
+                            : new XSSFWorkbook(inputStream);
+                    Sheet sheet = workbook.getSheetAt(0);
+                    if (sheet == null) throw new Exception("Sheet is null");
+
+                    List<String> columnNames = new ArrayList<>();
+                    List<List<String>> extractedData = new ArrayList<>();
+
+                    boolean isHeader = true;
+                    for (Row row : sheet) {
+                        if (isHeader) {
+                            for (Cell cell : row) {
+                                columnNames.add(cell.getStringCellValue().trim().replaceAll("[^a-zA-Z0-9_]", "_"));
+                            }
+                            isHeader = false;
+                        } else {
+                            List<String> rowData = new ArrayList<>();
+                            for (int i = 0; i < columnNames.size(); i++) {
+                                rowData.add(getCellValue(row.getCell(i)));
+                            }
+                            extractedData.add(rowData);
+                        }
+                    }
+
+                    workbook.close();
+                    inputStream.close();
+
+                    String selectedSheetType = spinnerSheetType.getSelectedItem().toString();
+                    String selectedYear = spinnerYear.getSelectedItem().toString();
+                    String selectedMonth = spinnerMonth.getSelectedItem().toString();
+
+                    String collectionName = selectedSheetType + selectedYear + selectedMonth;
+
+                    Map<String, Object> collectionReminder = new HashMap<>();
+                    collectionReminder.put("name", collectionName);
+
+                    firestore.collection("CollectionsList")
+                            .document(collectionName)
+                            .set(collectionReminder)
+                            .addOnSuccessListener(aVoid -> Log.d("Firestore", "Collection name saved"))
+                            .addOnFailureListener(e -> Log.e("Firestore", "Error saving collection name", e));
+
+                    for (List<String> rowData : extractedData) {
+                        Map<String, Object> dataMap = new HashMap<>();
+                        for (int i = 0; i < columnNames.size(); i++) {
+                            dataMap.put(columnNames.get(i), rowData.get(i));
+                        }
+
+                        firestore.collection(collectionName)
+                                .add(dataMap)
+                                .addOnSuccessListener(documentReference -> {
+                                    Log.d("Firestore", "Document written with ID: " + documentReference.getId());
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("Firestore", "Error adding document", e);
+                                });
+                    }
+
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            Toast.makeText(getContext(), "Data uploaded successfully", Toast.LENGTH_SHORT).show();
+                            dismiss();
+                        });
+                    }
+                } catch (Exception e) {
+                    Log.e("ExcelDebug", "Error processing file: ", e);
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        });
+                    }
+                }
+            }).start();
+        } else {
+            Toast.makeText(getContext(), "Please select a file first", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void openFileChooser() {
@@ -175,7 +246,8 @@ public class UploadExcelBottomSheet extends BottomSheetDialogFragment {
             selectedFileUri = data.getData();
             if (selectedFileUri != null) {
                 String fileName = getFileName(selectedFileUri);
-                btnSelectFile.setText(fileName + " selected");
+                selectedFileName.setText(fileName);
+                selectedFileName.setTextColor(0xFFFFFFFF); // White color for selected file
             }
         }
     }

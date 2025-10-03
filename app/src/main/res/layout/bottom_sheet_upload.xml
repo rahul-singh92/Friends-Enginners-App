@@ -1,109 +1,236 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="0.45"
-    android:background="@drawable/bottom_sheet_bg"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:clipToOutline="true"
-    android:elevation="12dp"
+    android:background="@drawable/bottom_sheet_background"
     android:padding="24dp">
 
-    <!-- Title -->
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Upload Excel File"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:layout_gravity="center_horizontal"
-        android:paddingBottom="10dp"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="16dp">
 
-    <!-- Select Excel File Button -->
-    <Button
-        android:id="@+id/btn_select_file"
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Upload Excel File"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#FFFFFF" />
+
+        <ImageView
+            android:id="@+id/closeButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:tint="#808080"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
         android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:text="📂 Select Excel File"
-        android:background="@drawable/button_bg"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_marginBottom="20dp"/>
+        android:layout_height="1dp"
+        android:background="#333333"
+        android:layout_marginBottom="20dp" />
 
-    <!-- Sheet Type Label -->
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Scrollable content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Select File Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/win11_field_card"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@android:drawable/ic_menu_upload"
+                        android:tint="#2196F3"
+                        android:padding="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="EXCEL FILE"
+                            android:textSize="11sp"
+                            android:textColor="#808080"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.05"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/selectedFileName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="No file selected"
+                            android:textSize="14sp"
+                            android:textColor="#A0A0A0"
+                            android:layout_marginTop="4dp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/btn_select_file"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="CHOOSE FILE"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#2196F3"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:layout_marginTop="12dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+
+            <!-- Sheet Type Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SHEET TYPE"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
+
+            <Spinner
+                android:id="@+id/spinner_sheet_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/win11_spinner_bg"
+                android:padding="14dp"
+                android:popupBackground="@drawable/win11_spinner_popup"
+                android:entries="@array/sheet_type_array"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Year Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="YEAR"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
+
+            <Spinner
+                android:id="@+id/spinner_year"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/win11_spinner_bg"
+                android:padding="14dp"
+                android:popupBackground="@drawable/win11_spinner_popup"
+                android:entries="@array/years_array"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Month Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MONTH"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
+
+            <Spinner
+                android:id="@+id/spinner_month"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/win11_spinner_bg"
+                android:padding="14dp"
+                android:popupBackground="@drawable/win11_spinner_popup"
+                android:entries="@array/sheet_month"
+                android:layout_marginBottom="24dp" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select Sheet Type"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:paddingBottom="6dp"
-        android:paddingTop="10dp"/>
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="16dp">
 
-    <!-- Sheet Type Spinner -->
-    <Spinner
-        android:id="@+id/spinner_sheet_type"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@drawable/spinner_bg"
-        android:popupBackground="@drawable/spinner_dropdown_background"
-        android:padding="8dp"
-        android:entries="@array/sheet_type_array"/>
+        <TextView
+            android:id="@+id/cancelButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CANCEL"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#808080"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="12dp"
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            android:focusable="true" />
 
-    <!-- Select Year Label -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Select Year"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:paddingBottom="6dp"/>
+        <TextView
+            android:id="@+id/btn_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="UPLOAD"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#2196F3"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="12dp"
+            android:clickable="true"
+            android:focusable="true" />
 
-    <!-- Year Spinner -->
-    <Spinner
-        android:id="@+id/spinner_year"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@drawable/spinner_bg"
-        android:popupBackground="@drawable/spinner_dropdown_background"
-        android:entries="@array/years_array"
-        android:padding="8dp"/>
-    <!-- Sheet Type Label -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Select Month"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:paddingBottom="6dp"
-        android:paddingTop="10dp"/>
+    </LinearLayout>
 
-    <!-- Sheet Type Spinner -->
-    <Spinner
-        android:id="@+id/spinner_month"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@drawable/spinner_bg"
-        android:popupBackground="@drawable/spinner_dropdown_background"
-        android:padding="8dp"
-        android:entries="@array/sheet_month"/>
-
-    <!-- Submit Button -->
-    <Button
-        android:id="@+id/btn_submit"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:text="✔ Submit"
-        android:background="@drawable/button_bg_secondary"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_marginTop="25dp"/>
 </LinearLayout>
