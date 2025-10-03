@@ -1,15 +1,16 @@
 package com.jitendersingh.friendsengineer.fragments;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -35,7 +36,7 @@ public class PendingRequestFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private WorkerAdapter adapter;
-    private TextView noPendingText;
+    private LinearLayout emptyStateLayout;
 
     private FirebaseFirestore firestore;
 
@@ -53,7 +54,7 @@ public class PendingRequestFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         recyclerView = view.findViewById(R.id.recycler_pending);
-        noPendingText = view.findViewById(R.id.text_no_pending);
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         firestore = FirebaseFirestore.getInstance();
@@ -91,10 +92,10 @@ public class PendingRequestFragment extends Fragment {
                     }
 
                     if (pendingList.isEmpty()) {
-                        noPendingText.setVisibility(View.VISIBLE);
+                        emptyStateLayout.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
                     } else {
-                        noPendingText.setVisibility(View.GONE);
+                        emptyStateLayout.setVisibility(View.GONE);
                         recyclerView.setVisibility(View.VISIBLE);
 
                         adapter = new WorkerAdapter(pendingList);
@@ -109,9 +110,9 @@ public class PendingRequestFragment extends Fragment {
     }
 
     private void showRequestOptionsDialog(Worker worker, int position) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.DarkAlertDialog);
         builder.setTitle("Request from " + worker.getName());
-        builder.setMessage("Choose an action:");
+        builder.setMessage("Amount: ₹" + worker.getAmount() + "\nReason: " + worker.getReason());
 
         builder.setPositiveButton("Accept", null);
         builder.setNegativeButton("Reject", (dialog, which) -> {
@@ -135,7 +136,7 @@ public class PendingRequestFragment extends Fragment {
         dialog.show();
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-            AlertDialog.Builder inputDialogBuilder = new AlertDialog.Builder(requireContext());
+            AlertDialog.Builder inputDialogBuilder = new AlertDialog.Builder(requireContext(), R.style.DarkAlertDialog);
             inputDialogBuilder.setTitle("Enter Accepted Amount");
 
             final View inputView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_input_amount, null);
@@ -167,7 +168,8 @@ public class PendingRequestFragment extends Fragment {
 
             inputDialogBuilder.setNegativeButton("Cancel", (d, w) -> d.dismiss());
 
-            inputDialogBuilder.show();
+            AlertDialog inputDialog = inputDialogBuilder.create();
+            inputDialog.show();
         });
     }
 
@@ -178,7 +180,7 @@ public class PendingRequestFragment extends Fragment {
             adapter.notifyItemRangeChanged(position, adapter.getItemCount());
 
             if (adapter.getItemCount() == 0) {
-                noPendingText.setVisibility(View.VISIBLE);
+                emptyStateLayout.setVisibility(View.VISIBLE);
                 recyclerView.setVisibility(View.GONE);
             }
         }

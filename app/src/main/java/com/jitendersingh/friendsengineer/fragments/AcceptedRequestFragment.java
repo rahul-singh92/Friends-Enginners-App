@@ -1,15 +1,15 @@
 package com.jitendersingh.friendsengineer.fragments;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,7 +33,7 @@ public class AcceptedRequestFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private WorkerAdapter adapter;
-    private TextView noAcceptedText;
+    private LinearLayout emptyStateLayout;
     private FirebaseFirestore firestore;
     private List<Worker> acceptedList;
 
@@ -51,7 +51,7 @@ public class AcceptedRequestFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         recyclerView = view.findViewById(R.id.accepted_recycler_view);
-        noAcceptedText = view.findViewById(R.id.text_no_accepted);
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         firestore = FirebaseFirestore.getInstance();
@@ -93,31 +93,39 @@ public class AcceptedRequestFragment extends Fragment {
                     }
 
                     if (acceptedList.isEmpty()) {
-                        noAcceptedText.setVisibility(View.VISIBLE);
+                        emptyStateLayout.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
                     } else {
-                        noAcceptedText.setVisibility(View.GONE);
+                        emptyStateLayout.setVisibility(View.GONE);
                         recyclerView.setVisibility(View.VISIBLE);
                         adapter = new WorkerAdapter(acceptedList);
                         recyclerView.setAdapter(adapter);
 
                         adapter.setOnItemLongClickListener((worker, position) -> {
-                            new AlertDialog.Builder(requireContext())
-                                    .setTitle("Delete Accepted Request")
-                                    .setMessage("Are you sure you want to delete the accepted request from " + worker.getName() + "?")
-                                    .setPositiveButton("Delete", (dialog, which) -> {
-                                        deleteRequestFromFirestore(worker, position);
-                                    })
-                                    .setNegativeButton("Cancel", null)
-                                    .show();
+                            showDeleteDialog(worker, position);
                         });
                     }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Failed to load accepted requests: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    noAcceptedText.setVisibility(View.VISIBLE);
+                    emptyStateLayout.setVisibility(View.VISIBLE);
                     recyclerView.setVisibility(View.GONE);
                 });
+    }
+
+    private void showDeleteDialog(Worker worker, int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.DarkAlertDialog);
+        builder.setTitle("Delete Accepted Request");
+        builder.setMessage("Are you sure you want to delete this accepted request?\n\nName: " + worker.getName() + "\nAmount: ₹" + worker.getAmount());
+
+        builder.setPositiveButton("Delete", (dialog, which) -> {
+            deleteRequestFromFirestore(worker, position);
+        });
+
+        builder.setNegativeButton("Cancel", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void deleteRequestFromFirestore(Worker worker, int position) {
@@ -130,18 +138,18 @@ public class AcceptedRequestFragment extends Fragment {
                 .document(worker.getDocId())
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(getContext(), "Deleted request from " + worker.getName(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Request deleted successfully", Toast.LENGTH_SHORT).show();
                     acceptedList.remove(position);
                     adapter.notifyItemRemoved(position);
                     adapter.notifyItemRangeChanged(position, adapter.getItemCount());
 
                     if (adapter.getItemCount() == 0) {
                         recyclerView.setVisibility(View.GONE);
-                        noAcceptedText.setVisibility(View.VISIBLE);
+                        emptyStateLayout.setVisibility(View.VISIBLE);
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Failed to delete request: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Failed to delete: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 }

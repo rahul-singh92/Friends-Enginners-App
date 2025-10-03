@@ -53,11 +53,11 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
     @Override
     public void onBindViewHolder(@NonNull WorkerViewHolder holder, int position) {
         Worker worker = workerList.get(position);
-        holder.nameText.setText("Name: " + worker.getName());
-        holder.fatherNameText.setText("Father's Name: " + worker.getFatherName());
-        holder.amountText.setText("Requested Amount: ₹" + worker.getAmount());
-        holder.reasonText.setText("Reason: " + worker.getReason());
-        holder.timeText.setText("Requested On: " + worker.getRequestTime());
+        holder.nameText.setText(worker.getName());
+        holder.fatherNameText.setText(worker.getFatherName());
+        holder.amountText.setText("₹" + worker.getAmount());
+        holder.reasonText.setText(worker.getReason());
+        holder.timeText.setText(worker.getRequestTime());
 
         // Click listener
         holder.itemView.setOnClickListener(v -> {

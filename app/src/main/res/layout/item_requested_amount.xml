@@ -1,36 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="8dp"
-    android:background="@android:color/white"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="6dp"
     android:layout_marginBottom="6dp"
-    android:elevation="2dp">
+    android:background="@drawable/win11_card_background"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:elevation="0dp">
 
+    <!-- Header: Amount and Status -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
+
+        <!-- Amount -->
+        <TextView
+            android:id="@+id/txt_amount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="₹0"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#FFFFFF" />
+
+        <!-- Status Badge -->
+        <TextView
+            android:id="@+id/txt_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pending"
+            android:textSize="11sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/status_badge_pending"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp" />
+
+    </LinearLayout>
+
+    <!-- Reason Label -->
     <TextView
-        android:id="@+id/txt_amount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="₹0"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:text="REASON"
+        android:textSize="10sp"
+        android:textColor="#808080"
+        android:textAllCaps="true"
+        android:letterSpacing="0.05"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginBottom="4dp" />
 
+    <!-- Reason Text -->
     <TextView
         android:id="@+id/txt_reason"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Reason here" />
+        android:text="Reason here"
+        android:textSize="14sp"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="12dp"
+        android:maxLines="2"
+        android:ellipsize="end" />
 
-    <TextView
-        android:id="@+id/txt_date"
+    <!-- Date with Icon -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="01 Jan 2025" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/txt_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pending"
-        android:textStyle="bold" />
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:src="@android:drawable/ic_menu_recent_history"
+            android:tint="#808080"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/txt_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="01 Jan 2025"
+            android:textSize="12sp"
+            android:textColor="#A0A0A0" />
+
+    </LinearLayout>
+
 </LinearLayout>

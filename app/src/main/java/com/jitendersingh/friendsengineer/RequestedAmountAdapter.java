@@ -32,6 +32,15 @@ public class RequestedAmountAdapter extends RecyclerView.Adapter<RequestedAmount
         holder.txtReason.setText(model.reason);
         holder.txtDate.setText(model.date);
         holder.txtStatus.setText(model.status);
+
+        // Set status badge color based on status
+        if (model.status.equalsIgnoreCase("Pending")) {
+            holder.txtStatus.setBackgroundResource(R.drawable.status_badge_pending);
+        } else if (model.status.equalsIgnoreCase("Accepted")) {
+            holder.txtStatus.setBackgroundResource(R.drawable.status_badge_accepted);
+        } else if (model.status.equalsIgnoreCase("Rejected")) {
+            holder.txtStatus.setBackgroundResource(R.drawable.status_badge_rejected);
+        }
     }
 
     @Override

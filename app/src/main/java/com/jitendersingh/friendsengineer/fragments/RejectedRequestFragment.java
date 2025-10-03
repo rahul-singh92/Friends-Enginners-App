@@ -4,11 +4,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,7 +34,7 @@ public class RejectedRequestFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private WorkerAdapter adapter;
-    private TextView noRejectedText;
+    private LinearLayout emptyStateLayout;
     private FirebaseFirestore firestore;
     private List<Worker> rejectedList;
 
@@ -49,7 +50,7 @@ public class RejectedRequestFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         recyclerView = view.findViewById(R.id.rejected_recycler_view);
-        noRejectedText = view.findViewById(R.id.text_no_rejected);
+        emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         firestore = FirebaseFirestore.getInstance();
@@ -90,31 +91,39 @@ public class RejectedRequestFragment extends Fragment {
                     }
 
                     if (rejectedList.isEmpty()) {
-                        noRejectedText.setVisibility(View.VISIBLE);
+                        emptyStateLayout.setVisibility(View.VISIBLE);
                         recyclerView.setVisibility(View.GONE);
                     } else {
-                        noRejectedText.setVisibility(View.GONE);
+                        emptyStateLayout.setVisibility(View.GONE);
                         recyclerView.setVisibility(View.VISIBLE);
                         adapter = new WorkerAdapter(rejectedList);
                         recyclerView.setAdapter(adapter);
 
                         adapter.setOnItemLongClickListener((worker, position) -> {
-                            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                                    .setTitle("Delete Rejected Request")
-                                    .setMessage("Are you sure you want to delete this rejected request from " + worker.getName() + "?")
-                                    .setPositiveButton("Delete", (dialog, which) -> {
-                                        deleteRequestFromFirestore(worker, position);
-                                    })
-                                    .setNegativeButton("Cancel", null)
-                                    .show();
+                            showDeleteDialog(worker, position);
                         });
                     }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Failed to load rejected requests: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    noRejectedText.setVisibility(View.VISIBLE);
+                    emptyStateLayout.setVisibility(View.VISIBLE);
                     recyclerView.setVisibility(View.GONE);
                 });
+    }
+
+    private void showDeleteDialog(Worker worker, int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.DarkAlertDialog);
+        builder.setTitle("Delete Rejected Request");
+        builder.setMessage("Are you sure you want to delete this rejected request?\n\nName: " + worker.getName() + "\nAmount: ₹" + worker.getAmount());
+
+        builder.setPositiveButton("Delete", (dialog, which) -> {
+            deleteRequestFromFirestore(worker, position);
+        });
+
+        builder.setNegativeButton("Cancel", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void deleteRequestFromFirestore(Worker worker, int position) {
@@ -127,18 +136,18 @@ public class RejectedRequestFragment extends Fragment {
                 .document(worker.getDocId())
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(getContext(), "Deleted rejected request from " + worker.getName(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Request deleted successfully", Toast.LENGTH_SHORT).show();
                     rejectedList.remove(position);
                     adapter.notifyItemRemoved(position);
                     adapter.notifyItemRangeChanged(position, adapter.getItemCount());
 
                     if (adapter.getItemCount() == 0) {
                         recyclerView.setVisibility(View.GONE);
-                        noRejectedText.setVisibility(View.VISIBLE);
+                        emptyStateLayout.setVisibility(View.VISIBLE);
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Failed to delete rejected request: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Failed to delete: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 }

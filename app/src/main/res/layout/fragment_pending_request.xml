@@ -1,24 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp">
+    android:padding="10dp"
+    android:background="#1E1E1E">
 
-    <TextView
-        android:id="@+id/text_no_pending"
+    <!-- Empty state -->
+    <LinearLayout
+        android:id="@+id/emptyStateLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="No pending requests"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
         android:gravity="center"
-        android:textSize="16sp"
-        android:visibility="gone"
-        android:textColor="@android:color/darker_gray"
-        android:padding="8dp" />
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@android:drawable/ic_menu_info_details"
+            app:tint="#404040"
+            android:alpha="0.6" />
+
+        <TextView
+            android:id="@+id/text_no_pending"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No pending requests"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="20dp"
+            android:textAlignment="center" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="All requests have been processed"
+            android:textSize="14sp"
+            android:textColor="#808080"
+            android:layout_marginTop="8dp"
+            android:textAlignment="center" />
+
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_pending"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical" />
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:background="#1E1E1E" />
 </LinearLayout>
