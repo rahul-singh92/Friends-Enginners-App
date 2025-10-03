@@ -3,50 +3,105 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/admin_toolbar"
     android:layout_width="match_parent"
-    android:layout_height="?attr/actionBarSize"
-    android:background="@color/menu_bar_color"
+    android:layout_height="wrap_content"
+    android:background="#252525"
+    android:elevation="4dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-    app:title="Admin Panel"
-    app:titleTextColor="@android:color/white">
+    app:contentInsetStart="0dp"
+    app:contentInsetEnd="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
-        <!-- Logo on the left -->
-        <ImageView
-            android:id="@+id/admin_logo"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:adjustViewBounds="true"
-            android:src="@drawable/logo"
-            android:scaleType="fitCenter"
-            android:layout_gravity="start"/>
-
-        <View
+        <!-- Logo and Title Section -->
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <!-- Message Icon before user icon -->
-        <ImageView
+            <!-- Logo -->
+            <ImageView
+                android:id="@+id/admin_logo"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/logo"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true" />
+
+            <!-- Title -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Friends Engineer"
+                    android:textSize="16sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#FFFFFF" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Admin Panel"
+                    android:textSize="11sp"
+                    android:textColor="#A0A0A0"
+                    android:layout_marginTop="1dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Message Icon -->
+        <LinearLayout
             android:id="@+id/message_icon"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/message_logo"
-            android:scaleType="centerCrop"
-            android:layout_marginEnd="8dp"/>
+            android:background="@drawable/win11_icon_button"
+            android:gravity="center"
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless">
 
-        <!-- User Icon on the right -->
-        <ImageView
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/message_icon_dark"
+                android:scaleType="fitCenter" />
+
+        </LinearLayout>
+
+        <!-- User Icon -->
+        <LinearLayout
             android:id="@+id/user_icon"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/user_icon"
-            android:scaleType="centerCrop"
-            android:layout_marginEnd="10dp"/>
+            android:background="@drawable/win11_icon_button"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/user_icon_dark"
+                android:scaleType="fitCenter" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

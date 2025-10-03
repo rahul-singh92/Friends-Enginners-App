@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -23,66 +23,73 @@ public class AdminActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin); // Ensure this matches your XML filename
+        setContentView(R.layout.activity_admin);
 
         // Set up the custom toolbar
         Toolbar toolbar = findViewById(R.id.admin_toolbar);
         setSupportActionBar(toolbar);
 
+        // Hide default title since we have custom layout
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+
         db = FirebaseFirestore.getInstance();
 
         // User icon change password functionality
-        ImageView userIcon = findViewById(R.id.user_icon);
+        LinearLayout userIcon = findViewById(R.id.user_icon);
         userIcon.setOnClickListener(v -> showUserOptionsDialog());
 
-        //Message Icon
-        ImageView messageIcon = findViewById(R.id.message_icon);
+        // Message Icon
+        LinearLayout messageIcon = findViewById(R.id.message_icon);
         messageIcon.setOnClickListener(v -> {
             Intent intent = new Intent(this, MessageActivity.class);
             startActivity(intent);
         });
 
-
-        // Find the button and set a click listener
+        // Upload Excel Button
         CardView uploadButton = findViewById(R.id.admin_button);
         uploadButton.setOnClickListener(v -> {
             UploadExcelBottomSheet bottomSheet = new UploadExcelBottomSheet();
             bottomSheet.show(getSupportFragmentManager(), "UploadExcelBottomSheet");
         });
 
+        // View Details Button
         CardView viewDetailsButton = findViewById(R.id.admin_button2);
         viewDetailsButton.setOnClickListener(v -> {
-            // Launch the TableListActivity to show available data tables
             Intent intent = new Intent(AdminActivity.this, TableListActivity.class);
             startActivity(intent);
         });
 
+        // Upload PDF Button
         CardView uploadPdfButton = findViewById(R.id.admin_button_pdf);
         uploadPdfButton.setOnClickListener(v -> {
             UploadPdfBottomSheet pdfBottomSheet = new UploadPdfBottomSheet();
             pdfBottomSheet.show(getSupportFragmentManager(), "UploadPdfBottomSheet");
         });
 
+        // View PDF Button
         CardView viewPdfButton = findViewById(R.id.view_pdf_button);
         viewPdfButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminActivity.this, WageCollectionsActivity.class);
             startActivity(intent);
         });
 
+        // Advance Request Button
         CardView advanceRequestButton = findViewById(R.id.advance_request_button);
         advanceRequestButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminActivity.this, AdvanceRequestActivity.class);
             startActivity(intent);
         });
 
-        //Total Advance Button
+        // Total Advance Button
         CardView totalAdvanceButton = findViewById(R.id.total_advance_button);
         totalAdvanceButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminActivity.this, TotalAdvanceActivity.class);
             startActivity(intent);
         });
 
-        //Worker Schedule
+        // Worker Schedule Upload
         CardView uploadScheduleButton = findViewById(R.id.worker_schedule_upload_button);
         uploadScheduleButton.setOnClickListener(v -> {
             UploadScheduleBottomSheet bottomSheet = new UploadScheduleBottomSheet();
@@ -96,19 +103,21 @@ public class AdminActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Upload Credentials button
+        // Upload Credentials
         CardView uploadCredentialButton = findViewById(R.id.upload_credentials_button);
         uploadCredentialButton.setOnClickListener(v -> {
             UploadCredentialsBottomSheet bottomSheet = new UploadCredentialsBottomSheet();
             bottomSheet.show(getSupportFragmentManager(), "CredentialBottomScheet");
         });
 
+        // View Credentials
         CardView viewCredentialButton = findViewById(R.id.view_credentials_button);
         viewCredentialButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdminActivity.this, CredentialsTablesActivity.class);
             startActivity(intent);
         });
 
+        // Enter Worker Details
         CardView enterWorkerDetails = findViewById(R.id.enter_worker_details_button);
         enterWorkerDetails.setOnClickListener(v -> {
             WorkerDetailBottomSheet bottomSheet = new WorkerDetailBottomSheet();
@@ -136,7 +145,6 @@ public class AdminActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DarkAlertDialog);
         builder.setTitle("Change Password");
 
-        // Inflate custom layout with EditTexts
         View viewInflated = LayoutInflater.from(this).inflate(R.layout.dialog_change_password, null, false);
         final EditText inputOldPassword = viewInflated.findViewById(R.id.input_old_password);
         final EditText inputNewPassword = viewInflated.findViewById(R.id.input_new_password);
@@ -174,7 +182,6 @@ public class AdminActivity extends AppCompatActivity {
     }
 
     private boolean isValidPassword(String password) {
-        // Basic validation - you can enhance this logic
         return password.length() >= 6;
     }
 
@@ -199,7 +206,7 @@ public class AdminActivity extends AppCompatActivity {
                             for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                                 String storedPassword = doc.getString("Password");
                                 if (storedPassword != null && storedPassword.equals(oldPassword)) {
-                                    if (!passwordUpdated[0]) {  // Prevent multiple updates
+                                    if (!passwordUpdated[0]) {
                                         db.collection(collection).document(doc.getId())
                                                 .update("Password", newPassword)
                                                 .addOnSuccessListener(aVoid -> {
@@ -214,10 +221,8 @@ public class AdminActivity extends AppCompatActivity {
                                         Toast.makeText(this, "Old password is incorrect", Toast.LENGTH_SHORT).show();
                                     }
                                 }
-                                return; // exit after first match found
+                                return;
                             }
-                        } else if (!userFoundInAnyCollection[0]) {
-                            // If username not found in any collections after all async calls complete
                         }
                     })
                     .addOnFailureListener(e -> Toast.makeText(this, "Error fetching user: " + e.getMessage(), Toast.LENGTH_SHORT).show());
