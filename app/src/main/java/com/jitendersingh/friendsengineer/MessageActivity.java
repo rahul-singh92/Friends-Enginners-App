@@ -2,9 +2,8 @@ package com.jitendersingh.friendsengineer;
 
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -24,10 +23,9 @@ import java.util.Map;
 
 public class MessageActivity extends AppCompatActivity {
 
-    private TextView headingText;
     private RecyclerView recyclerView;
     private EditText inputMessage;
-    private Button sendButton;
+    private LinearLayout sendButton, backButton;
 
     private FirebaseFirestore db;
     private ListenerRegistration messagesListener;
@@ -40,17 +38,30 @@ public class MessageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message);
 
-        headingText = findViewById(R.id.tv_heading);
+        // Hide action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
+        // Initialize views
         recyclerView = findViewById(R.id.recycler_messages);
         inputMessage = findViewById(R.id.edit_message);
         sendButton = findViewById(R.id.button_send);
+        backButton = findViewById(R.id.backButton);
 
         db = FirebaseFirestore.getInstance();
 
+        // Back button handler
+        backButton.setOnClickListener(v -> finish());
+
+        // Setup RecyclerView
         chatAdapter = new ChatAdapter(messageList);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true); // Start from bottom
+        recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(chatAdapter);
 
+        // Send button handler
         sendButton.setOnClickListener(v -> sendMessage());
 
         listenForMessages();
@@ -90,7 +101,9 @@ public class MessageActivity extends AppCompatActivity {
 
         db.collection("messages")
                 .add(messageMap)
-                .addOnSuccessListener(documentReference -> inputMessage.setText(""))
+                .addOnSuccessListener(documentReference -> {
+                    inputMessage.setText("");
+                })
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to send message: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
