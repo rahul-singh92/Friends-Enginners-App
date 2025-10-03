@@ -3,37 +3,58 @@ package com.jitendersingh.friendsengineer;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ViewWorkerDetailsActivity extends AppCompatActivity {
 
-    private ListView listView;
+    private RecyclerView recyclerView;
+    private LinearLayout emptyState;
+    private LinearLayout backButton;
+    private TextView workerCount;
     private FirebaseFirestore firestore;
-    private ArrayAdapter<String> adapter;
-    private List<String> workerList;
-    private List<DocumentSnapshot> documentSnapshots; // for click reference
+    private WorkerAdapter adapter;
+    private List<DocumentSnapshot> workerList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_worker_details);
 
-        listView = findViewById(R.id.worker_list_view);
+        // Hide action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
+        // Initialize views
+        recyclerView = findViewById(R.id.recyclerViewWorkers);
+        emptyState = findViewById(R.id.emptyState);
+        backButton = findViewById(R.id.backButton);
+        workerCount = findViewById(R.id.workerCount);
+
+        // Back button handler
+        backButton.setOnClickListener(v -> finish());
+
+        // Setup RecyclerView
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         firestore = FirebaseFirestore.getInstance();
         workerList = new ArrayList<>();
-        documentSnapshots = new ArrayList<>();
+
+        adapter = new WorkerAdapter(workerList, this::onWorkerClicked);
+        recyclerView.setAdapter(adapter);
 
         loadWorkerDetailsFromFirestore();
     }
@@ -43,34 +64,42 @@ public class ViewWorkerDetailsActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (queryDocumentSnapshots.isEmpty()) {
-                        Toast.makeText(this, "No worker details found", Toast.LENGTH_SHORT).show();
+                        recyclerView.setVisibility(View.GONE);
+                        emptyState.setVisibility(View.VISIBLE);
+                        workerCount.setText("0");
                         return;
                     }
 
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        String name = doc.getString("Name");
-                        String fatherName = doc.getString("FatherName");
-                        String id = doc.getId(); // Firestore document ID
+                    workerList.clear();
+                    workerList.addAll(queryDocumentSnapshots.getDocuments());
 
-                        workerList.add("Name: " + name + "\nFather's Name: " + fatherName);
-                        documentSnapshots.add(doc);
+                    // Update worker count
+                    workerCount.setText(String.valueOf(workerList.size()));
+
+                    // Show/hide empty state
+                    if (workerList.isEmpty()) {
+                        recyclerView.setVisibility(View.GONE);
+                        emptyState.setVisibility(View.VISIBLE);
+                    } else {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyState.setVisibility(View.GONE);
                     }
 
-                    adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, workerList);
-                    listView.setAdapter(adapter);
-
-                    listView.setOnItemClickListener((parent, view, position, id) -> {
-                        DocumentSnapshot selectedDoc = documentSnapshots.get(position);
-                        String documentId = selectedDoc.getId();
-
-                        Intent intent = new Intent(ViewWorkerDetailsActivity.this, WorkerDetailActivity.class);
-                        intent.putExtra("document_id", documentId);
-                        startActivity(intent);
-                    });
+                    adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to fetch worker details: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     Log.e("FirestoreError", e.getMessage(), e);
+                    recyclerView.setVisibility(View.GONE);
+                    emptyState.setVisibility(View.VISIBLE);
                 });
+    }
+
+    private void onWorkerClicked(DocumentSnapshot worker) {
+        String documentId = worker.getId();
+
+        Intent intent = new Intent(ViewWorkerDetailsActivity.this, WorkerDetailActivity.class);
+        intent.putExtra("document_id", documentId);
+        startActivity(intent);
     }
 }
