@@ -1,109 +1,278 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bottom_sheet_bg"
     android:orientation="vertical"
-    android:clipToOutline="true"
-    android:elevation="12dp"
+    android:background="@drawable/bottom_sheet_background"
     android:padding="24dp">
 
-    <!-- Title -->
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Upload PDF File"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:layout_gravity="center_horizontal"
-        android:paddingBottom="10dp"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="16dp">
 
-    <!-- Select PDF File Button -->
-    <Button
-        android:id="@+id/btn_select_file"
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Upload Schedule"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#FFFFFF" />
+
+        <ImageView
+            android:id="@+id/closeButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="#808080"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
         android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:text="📂 Select PDF File"
-        android:background="@drawable/button_bg"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_marginBottom="20dp"/>
+        android:layout_height="1dp"
+        android:background="#333333"
+        android:layout_marginBottom="20dp" />
 
-    <!-- Spinner Label -->
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Scrollable content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Select PDF File Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/win11_field_card"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@android:drawable/ic_menu_agenda"
+                        app:tint="#E91E63"
+                        android:padding="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PDF FILE"
+                            android:textSize="11sp"
+                            android:textColor="#808080"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.05"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/selectedFileName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="No file selected"
+                            android:textSize="14sp"
+                            android:textColor="#A0A0A0"
+                            android:layout_marginTop="4dp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/btn_select_file"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="CHOOSE PDF"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#E91E63"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:layout_marginTop="12dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+
+            <!-- Branch/Schedule Type Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SCHEDULE TYPE"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
+
+            <Spinner
+                android:id="@+id/spinner_options"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/win11_spinner_bg"
+                android:padding="14dp"
+                android:popupBackground="@drawable/win11_spinner_popup"
+                android:entries="@array/branch_array"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Start Date Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="START DATE"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:id="@+id/btn_select_start_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/ic_menu_my_calendar"
+                    app:tint="#808080"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:id="@+id/text_start_date"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Select start date"
+                    android:textSize="15sp"
+                    android:textColor="#606060" />
+
+            </LinearLayout>
+
+            <!-- End Date Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="END DATE"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:id="@+id/btn_select_end_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:layout_marginBottom="24dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/ic_menu_my_calendar"
+                    app:tint="#808080"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:id="@+id/text_end_date"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Select end date"
+                    android:textSize="15sp"
+                    android:textColor="#606060" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select Option"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:paddingBottom="6dp"/>
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="16dp">
 
-    <!-- Spinner -->
-    <Spinner
-        android:id="@+id/spinner_options"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@drawable/spinner_bg"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:entries="@array/branch_array"
-        android:layout_marginBottom="20dp"/>
+        <TextView
+            android:id="@+id/cancelButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CANCEL"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#808080"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="12dp"
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            android:focusable="true" />
 
-    <!-- Starting Date Picker Label -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Select Starting Date"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:paddingBottom="6dp"/>
+        <TextView
+            android:id="@+id/btn_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="UPLOAD"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#2196F3"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="12dp"
+            android:clickable="true"
+            android:focusable="true" />
 
-    <!-- Starting Date Picker Button -->
-    <Button
-        android:id="@+id/btn_select_start_date"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:text="📅 Pick Starting Date"
-        android:background="@drawable/spinner_bg"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        android:layout_marginBottom="16dp"/>
+    </LinearLayout>
 
-    <!-- Ending Date Picker Label -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Select Ending Date"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:paddingBottom="6dp"/>
-
-    <!-- Ending Date Picker Button -->
-    <Button
-        android:id="@+id/btn_select_end_date"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:text="📅 Pick Ending Date"
-        android:background="@drawable/spinner_bg"
-        android:textColor="@color/black"
-        android:textSize="16sp"/>
-
-    <!-- Submit Button -->
-    <Button
-        android:id="@+id/btn_submit"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:text="✔ Submit"
-        android:background="@drawable/button_bg_secondary"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_marginTop="25dp"/>
 </LinearLayout>

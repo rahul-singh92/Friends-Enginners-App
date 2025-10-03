@@ -1,6 +1,7 @@
 package com.jitendersingh.friendsengineer;
 
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
@@ -11,14 +12,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -35,11 +41,34 @@ public class UploadScheduleBottomSheet extends BottomSheetDialogFragment {
     private static final int FILE_SELECT_CODE = 1001;
     private Uri selectedPdfUri = null;
 
-    private Button btnSelectFile, btnStartDate, btnEndDate, btnSubmit;
+    private TextView btnSelectFile, btnSubmit, cancelButton;
+    private LinearLayout btnStartDate, btnEndDate;
+    private TextView textStartDate, textEndDate, selectedFileName;
+    private ImageView closeButton;
     private Spinner spinnerScheduleType;
 
     private String selectedStartDate = null;
     private String selectedEndDate = null;
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+
+        dialog.setOnShowListener(dialogInterface -> {
+            BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) dialogInterface;
+            FrameLayout bottomSheet = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+
+            if (bottomSheet != null) {
+                BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
+                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setDraggable(false);
+                behavior.setSkipCollapsed(true);
+            }
+        });
+
+        return dialog;
+    }
 
     @Nullable
     @Override
@@ -53,26 +82,37 @@ public class UploadScheduleBottomSheet extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Initialize views
         btnSelectFile = view.findViewById(R.id.btn_select_file);
         btnStartDate = view.findViewById(R.id.btn_select_start_date);
         btnEndDate = view.findViewById(R.id.btn_select_end_date);
         btnSubmit = view.findViewById(R.id.btn_submit);
+        cancelButton = view.findViewById(R.id.cancelButton);
+        closeButton = view.findViewById(R.id.closeButton);
         spinnerScheduleType = view.findViewById(R.id.spinner_options);
+        selectedFileName = view.findViewById(R.id.selectedFileName);
+        textStartDate = view.findViewById(R.id.text_start_date);
+        textEndDate = view.findViewById(R.id.text_end_date);
 
-        // Setup Spinner adapter with values from values/arrays.xml (make sure branch_array exists)
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                getContext(),
-                R.array.branch_array,
-                android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerScheduleType.setAdapter(adapter);
+        // Setup dark theme spinner
+        setupSpinner();
 
+        // Close button
+        closeButton.setOnClickListener(v -> dismiss());
+
+        // Cancel button
+        cancelButton.setOnClickListener(v -> dismiss());
+
+        // Select file button
         btnSelectFile.setOnClickListener(v -> openPdfFileChooser());
 
+        // Start date button
         btnStartDate.setOnClickListener(v -> showDatePicker(true));
 
+        // End date button
         btnEndDate.setOnClickListener(v -> showDatePicker(false));
 
+        // Submit button
         btnSubmit.setOnClickListener(v -> {
             if (selectedPdfUri == null) {
                 Toast.makeText(getContext(), "Please select a PDF file", Toast.LENGTH_SHORT).show();
@@ -88,9 +128,18 @@ public class UploadScheduleBottomSheet extends BottomSheetDialogFragment {
             }
 
             String spinnerValue = spinnerScheduleType.getSelectedItem().toString();
-
             uploadPdfAndSaveData(spinnerValue, selectedStartDate, selectedEndDate, selectedPdfUri);
         });
+    }
+
+    private void setupSpinner() {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                requireContext(),
+                R.array.branch_array,
+                R.layout.spinner_item_dark
+        );
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item_dark);
+        spinnerScheduleType.setAdapter(adapter);
     }
 
     private void openPdfFileChooser() {
@@ -103,14 +152,17 @@ public class UploadScheduleBottomSheet extends BottomSheetDialogFragment {
     private void showDatePicker(boolean isStartDate) {
         Calendar calendar = Calendar.getInstance();
         DatePickerDialog dialog = new DatePickerDialog(getContext(),
+                R.style.DarkAlertDialog,
                 (DatePicker view, int year, int month, int dayOfMonth) -> {
                     String dateFormatted = String.format(Locale.US, "%02d/%02d/%04d", dayOfMonth, month + 1, year);
                     if (isStartDate) {
                         selectedStartDate = dateFormatted;
-                        btnStartDate.setText("📅 " + dateFormatted);
+                        textStartDate.setText(dateFormatted);
+                        textStartDate.setTextColor(0xFFFFFFFF); // White
                     } else {
                         selectedEndDate = dateFormatted;
-                        btnEndDate.setText("📅 " + dateFormatted);
+                        textEndDate.setText(dateFormatted);
+                        textEndDate.setTextColor(0xFFFFFFFF); // White
                     }
                 },
                 calendar.get(Calendar.YEAR),
@@ -127,7 +179,8 @@ public class UploadScheduleBottomSheet extends BottomSheetDialogFragment {
             if (data != null) {
                 selectedPdfUri = data.getData();
                 String fileName = getFileNameFromUri(selectedPdfUri);
-                btnSelectFile.setText("📄 " + fileName);
+                selectedFileName.setText(fileName);
+                selectedFileName.setTextColor(0xFFFFFFFF); // White
             }
         }
     }
@@ -158,7 +211,7 @@ public class UploadScheduleBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void uploadPdfAndSaveData(String spinnerValue, String startDate, String endDate, Uri pdfUri) {
-        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        ProgressDialog progressDialog = new ProgressDialog(getContext(), R.style.DarkAlertDialog);
         progressDialog.setMessage("Uploading PDF...");
         progressDialog.setCancelable(false);
         progressDialog.show();
