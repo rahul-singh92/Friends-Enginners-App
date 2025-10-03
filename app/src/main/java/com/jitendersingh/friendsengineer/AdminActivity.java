@@ -123,7 +123,7 @@ public class AdminActivity extends AppCompatActivity {
     }
 
     private void showUserOptionsDialog() {
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.DarkAlertDialog)
                 .setTitle("User Options")
                 .setItems(new String[]{"Change Password"}, (dialog, which) -> {
                     if (which == 0) {
@@ -133,7 +133,7 @@ public class AdminActivity extends AppCompatActivity {
     }
 
     private void showChangePasswordDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DarkAlertDialog);
         builder.setTitle("Change Password");
 
         // Inflate custom layout with EditTexts
@@ -144,7 +144,7 @@ public class AdminActivity extends AppCompatActivity {
 
         builder.setView(viewInflated);
 
-        builder.setPositiveButton("OK", (dialog, which) -> {
+        builder.setPositiveButton("Change", (dialog, which) -> {
             String oldPassword = inputOldPassword.getText().toString().trim();
             String newPassword = inputNewPassword.getText().toString().trim();
             String confirmPassword = inputConfirmPassword.getText().toString().trim();
@@ -169,7 +169,8 @@ public class AdminActivity extends AppCompatActivity {
 
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
 
-        builder.show();
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private boolean isValidPassword(String password) {
