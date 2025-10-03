@@ -1,131 +1,402 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@drawable/bottom_sheet_background"
+    android:padding="24dp">
 
-    <!-- Fixed header -->
-    <TextView
-        android:id="@+id/header_worker_details"
+    <!-- Header -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Enter Worker Details"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:paddingBottom="12dp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="16dp">
 
-    <!-- Scrollable content -->
-    <ScrollView
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Worker Details"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#FFFFFF" />
+
+        <ImageView
+            android:id="@+id/closeButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:tint="#808080"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#333333"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Scrollable content - CHANGED TO NestedScrollView -->
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:scrollbars="none"
+        android:fillViewport="true">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <ImageView
-                android:id="@+id/worker_image_view"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_gravity="center"
-                android:scaleType="centerCrop"
-                android:src="@drawable/baseline_person_24"
-                android:background="@android:color/darker_gray"
-                android:layout_marginBottom="8dp"
-                android:contentDescription="Worker Image" />
-
-            <Button
-                android:id="@+id/upload_image_button"
+            <!-- Image Section -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Upload Image" />
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginBottom="20dp">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center"
+                    app:cardCornerRadius="60dp"
+                    app:cardElevation="0dp"
+                    android:layout_marginBottom="12dp">
+
+                    <ImageView
+                        android:id="@+id/worker_image_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/baseline_person_24"
+                        android:background="#2D2D2D"
+                        android:contentDescription="Worker Image" />
+
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/upload_image_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="UPLOAD IMAGE"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#2196F3"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:padding="12dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+
+            <!-- All the EditText fields remain exactly the same as before -->
+            <!-- P. No. Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="P. NO."
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/p_no"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="P. No."
-                android:inputType="number" />
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#606060"
+                android:hint="Enter P. No."
+                android:textSize="15sp"
+                android:inputType="number"
+                android:layout_marginBottom="16dp" />
+
+            <!-- ESI No. Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ESI NO."
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/esi_no"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="ESI No."
-                android:inputType="number" />
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#606060"
+                android:hint="Enter ESI No."
+                android:textSize="15sp"
+                android:inputType="number"
+                android:layout_marginBottom="16dp" />
+
+            <!-- UAN No. Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="UAN NO."
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/uan_no"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="UAN No."
-                android:inputType="number" />
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#606060"
+                android:hint="Enter UAN No."
+                android:textSize="15sp"
+                android:inputType="number"
+                android:layout_marginBottom="16dp" />
+
+            <!-- PF No. Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PF NO."
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/pf_no"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="PF No."
-                android:inputType="number" />
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#606060"
+                android:hint="Enter PF No."
+                android:textSize="15sp"
+                android:inputType="number"
+                android:layout_marginBottom="16dp" />
 
+            <!-- Name Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NAME"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Name" />
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#606060"
+                android:hint="Enter name"
+                android:textSize="15sp"
+                android:inputType="textPersonName"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Father's Name Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FATHER'S NAME"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/father_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Father's Name" />
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#606060"
+                android:hint="Enter father's name"
+                android:textSize="15sp"
+                android:inputType="textPersonName"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Contact Number Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CONTACT NUMBER"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/contact_number"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Contact Number"
-                android:inputType="phone" />
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#606060"
+                android:hint="Enter contact number"
+                android:textSize="15sp"
+                android:inputType="phone"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Date of Joining Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DATE OF JOINING"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/date_of_joining"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Date of Joining"
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#606060"
+                android:hint="Select date"
+                android:textSize="15sp"
                 android:focusable="false"
                 android:clickable="true"
-                android:inputType="none" />
+                android:inputType="none"
+                android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+                android:drawableTint="#808080"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Department Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DEPARTMENT"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/department"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Department" />
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#606060"
+                android:hint="Enter department"
+                android:textSize="15sp"
+                android:inputType="text"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Date of Leave Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DATE OF LEAVE (OPTIONAL)"
+                android:textSize="11sp"
+                android:textColor="#808080"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/date_of_leave"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Date of Leave (if any)"
+                android:background="@drawable/win11_edit_text_bg"
+                android:padding="14dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#606060"
+                android:hint="Select date (if any)"
+                android:textSize="15sp"
                 android:focusable="false"
                 android:clickable="true"
-                android:inputType="none" />
-
-            <Button
-                android:id="@+id/submit_worker_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Submit"
-                android:layout_marginTop="12dp"
-                android:backgroundTint="@color/teal_700"
-                android:textColor="@android:color/white" />
+                android:inputType="none"
+                android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+                android:drawableTint="#808080"
+                android:layout_marginBottom="24dp" />
 
         </LinearLayout>
-    </ScrollView>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:id="@+id/cancelButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CANCEL"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#808080"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="12dp"
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/submit_worker_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SUBMIT"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#2196F3"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="12dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
 
 </LinearLayout>
