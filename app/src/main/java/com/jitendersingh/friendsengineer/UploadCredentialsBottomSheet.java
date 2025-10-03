@@ -1,6 +1,7 @@
 package com.jitendersingh.friendsengineer;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -10,13 +11,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -32,104 +38,153 @@ public class UploadCredentialsBottomSheet extends BottomSheetDialogFragment {
 
     private static final int FILE_SELECT_CODE = 100;
     private Uri selectedFileUri;
-    private Button btnSelectFile, btnUpload;
+    private TextView btnSelectFile, btnSubmit, cancelButton, selectedFileName;
+    private ImageView closeButton;
+    private Spinner spinnerUserType;
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+
+        dialog.setOnShowListener(dialogInterface -> {
+            BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) dialogInterface;
+            FrameLayout bottomSheet = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+
+            if (bottomSheet != null) {
+                BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
+                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setDraggable(false);
+                behavior.setSkipCollapsed(true);
+            }
+        });
+
+        return dialog;
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.bottom_sheet_upload_credentials, container, false);
 
+        // Initialize views
         btnSelectFile = view.findViewById(R.id.btn_select_file);
-        btnUpload = view.findViewById(R.id.btn_submit);
+        btnSubmit = view.findViewById(R.id.btn_submit);
+        cancelButton = view.findViewById(R.id.cancelButton);
+        closeButton = view.findViewById(R.id.closeButton);
+        selectedFileName = view.findViewById(R.id.selectedFileName);
+        spinnerUserType = view.findViewById(R.id.spinner_user_type);
 
+        // Setup dark theme spinner
+        setupSpinner();
+
+        // Close button
+        closeButton.setOnClickListener(v -> dismiss());
+
+        // Cancel button
+        cancelButton.setOnClickListener(v -> dismiss());
+
+        // Select file button
         btnSelectFile.setOnClickListener(v -> openFileChooser());
 
-        btnUpload.setOnClickListener(v -> {
-            if (selectedFileUri != null) {
-                android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(getContext());
-                progressDialog.setMessage("Uploading to Firebase...");
-                progressDialog.setCancelable(false);
-                progressDialog.show();
-
-                new Thread(() -> {
-                    try {
-                        InputStream inputStream = getContext().getContentResolver().openInputStream(selectedFileUri);
-                        if (inputStream == null) throw new Exception("Unable to open file stream");
-
-                        Workbook workbook = selectedFileUri.toString().endsWith(".xls")
-                                ? new HSSFWorkbook(inputStream)
-                                : new XSSFWorkbook(inputStream);
-                        Sheet sheet = workbook.getSheetAt(0);
-                        if (sheet == null) throw new Exception("Sheet is null");
-
-                        List<String> columnNames = new ArrayList<>();
-                        List<List<String>> extractedData = new ArrayList<>();
-
-                        boolean isHeader = true;
-                        for (Row row : sheet) {
-                            if (isHeader) {
-                                for (Cell cell : row) {
-                                    columnNames.add(cell.getStringCellValue().trim().replaceAll("[^a-zA-Z0-9_]", "_"));
-                                }
-                                isHeader = false;
-                            } else {
-                                List<String> rowData = new ArrayList<>();
-                                for (int i = 0; i < columnNames.size(); i++) {
-                                    rowData.add(getCellValue(row.getCell(i)));
-                                }
-                                extractedData.add(rowData);
-                            }
-                        }
-
-                        workbook.close();
-                        inputStream.close();
-
-                        Spinner spinnerSheetType = getView().findViewById(R.id.spinner_user_type);
-                        String selectedSheetType = spinnerSheetType.getSelectedItem().toString().toLowerCase(Locale.ROOT);
-                        String collectionName = "credentials_" + selectedSheetType;
-
-                        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-
-                        for (List<String> row : extractedData) {
-                            Map<String, Object> doc = new HashMap<>();
-                            for (int i = 0; i < columnNames.size(); i++) {
-                                doc.put(columnNames.get(i), row.get(i));
-                            }
-
-                            firestore.collection(collectionName)
-                                    .add(doc)
-                                    .addOnSuccessListener(documentReference -> {
-                                        Log.d("FirestoreUpload", "Uploaded: " + documentReference.getId());
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        Log.e("FirestoreUpload", "Upload error", e);
-                                    });
-                        }
-
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                progressDialog.dismiss();
-                                Toast.makeText(getContext(), "Uploaded to Firebase successfully", Toast.LENGTH_SHORT).show();
-                                dismiss();
-                            });
-                        }
-
-                    } catch (Exception e) {
-                        Log.e("ExcelUpload", "Error: ", e);
-                        if (getActivity() != null) {
-                            getActivity().runOnUiThread(() -> {
-                                progressDialog.dismiss();
-                                Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            });
-                        }
-                    }
-                }).start();
-            } else {
-                Toast.makeText(getContext(), "Please select a file first", Toast.LENGTH_SHORT).show();
-            }
-        });
+        // Upload button
+        btnSubmit.setOnClickListener(v -> uploadFile());
 
         return view;
+    }
+
+    private void setupSpinner() {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                requireContext(),
+                R.array.user_type_array,
+                R.layout.spinner_item_dark
+        );
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item_dark);
+        spinnerUserType.setAdapter(adapter);
+    }
+
+    private void uploadFile() {
+        if (selectedFileUri != null) {
+            android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(getContext(), R.style.DarkAlertDialog);
+            progressDialog.setMessage("Uploading to Firebase...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+
+            new Thread(() -> {
+                try {
+                    InputStream inputStream = getContext().getContentResolver().openInputStream(selectedFileUri);
+                    if (inputStream == null) throw new Exception("Unable to open file stream");
+
+                    Workbook workbook = selectedFileUri.toString().endsWith(".xls")
+                            ? new HSSFWorkbook(inputStream)
+                            : new XSSFWorkbook(inputStream);
+                    Sheet sheet = workbook.getSheetAt(0);
+                    if (sheet == null) throw new Exception("Sheet is null");
+
+                    List<String> columnNames = new ArrayList<>();
+                    List<List<String>> extractedData = new ArrayList<>();
+
+                    boolean isHeader = true;
+                    for (Row row : sheet) {
+                        if (isHeader) {
+                            for (Cell cell : row) {
+                                columnNames.add(cell.getStringCellValue().trim().replaceAll("[^a-zA-Z0-9_]", "_"));
+                            }
+                            isHeader = false;
+                        } else {
+                            List<String> rowData = new ArrayList<>();
+                            for (int i = 0; i < columnNames.size(); i++) {
+                                rowData.add(getCellValue(row.getCell(i)));
+                            }
+                            extractedData.add(rowData);
+                        }
+                    }
+
+                    workbook.close();
+                    inputStream.close();
+
+                    String selectedSheetType = spinnerUserType.getSelectedItem().toString().toLowerCase(Locale.ROOT);
+                    String collectionName = "credentials_" + selectedSheetType;
+
+                    FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
+                    for (List<String> row : extractedData) {
+                        Map<String, Object> doc = new HashMap<>();
+                        for (int i = 0; i < columnNames.size(); i++) {
+                            doc.put(columnNames.get(i), row.get(i));
+                        }
+
+                        firestore.collection(collectionName)
+                                .add(doc)
+                                .addOnSuccessListener(documentReference -> {
+                                    Log.d("FirestoreUpload", "Uploaded: " + documentReference.getId());
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("FirestoreUpload", "Upload error", e);
+                                });
+                    }
+
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            Toast.makeText(getContext(), "Uploaded to Firebase successfully", Toast.LENGTH_SHORT).show();
+                            dismiss();
+                        });
+                    }
+
+                } catch (Exception e) {
+                    Log.e("ExcelUpload", "Error: ", e);
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            progressDialog.dismiss();
+                            Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        });
+                    }
+                }
+            }).start();
+        } else {
+            Toast.makeText(getContext(), "Please select a file first", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void openFileChooser() {
@@ -155,7 +210,8 @@ public class UploadCredentialsBottomSheet extends BottomSheetDialogFragment {
             selectedFileUri = data.getData();
             if (selectedFileUri != null) {
                 String fileName = getFileName(selectedFileUri);
-                btnSelectFile.setText(fileName + " selected");
+                selectedFileName.setText(fileName);
+                selectedFileName.setTextColor(0xFFFFFFFF); // White
             }
         }
     }
