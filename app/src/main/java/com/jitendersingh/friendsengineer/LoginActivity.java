@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -31,18 +33,28 @@ public class LoginActivity extends Activity {
 
     EditText usernameField, passwordField;
     Button loginBtn;
+    CardView loginCard;
+    TextView errorText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        // Initialize views
         usernameField = findViewById(R.id.username);
         passwordField = findViewById(R.id.password);
         loginBtn = findViewById(R.id.loginButton);
-        TextView errorText = findViewById(R.id.errorText);
+        errorText = findViewById(R.id.errorText);
 
-        DatabaseHelper dbHelper = new DatabaseHelper(this); // optional if used later
+        // Get the login card (parent of logo)
+        View logoView = findViewById(R.id.logo);
+        loginCard = (CardView) logoView.getParent().getParent();
+
+        // Start animations
+        startAnimations();
+
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
 
         // Check if privacy policy was already accepted
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
@@ -51,19 +63,38 @@ public class LoginActivity extends Activity {
         if (!policyAccepted) {
             showPrivacyPolicyDialog();
         } else {
-            // Privacy policy already accepted, check for storage permission
             requestStoragePermissionIfNeeded();
         }
 
         loginBtn.setOnClickListener(view -> {
+            // Hide error text
+            errorText.setVisibility(View.GONE);
+
+            // Button press animation
+            view.animate()
+                    .scaleX(0.95f)
+                    .scaleY(0.95f)
+                    .setDuration(100)
+                    .withEndAction(() -> {
+                        view.animate()
+                                .scaleX(1f)
+                                .scaleY(1f)
+                                .setDuration(100)
+                                .start();
+                    })
+                    .start();
+
             String username = usernameField.getText().toString().trim();
             String password = passwordField.getText().toString().trim();
 
             if (username.isEmpty() || password.isEmpty()) {
-                errorText.setVisibility(View.VISIBLE);
-                Toast.makeText(this, "Please enter both username and password", Toast.LENGTH_SHORT).show();
+                showErrorWithAnimation("Please enter both username and password");
                 return;
             }
+
+            // Show loading state
+            loginBtn.setEnabled(false);
+            loginBtn.setText("Signing in...");
 
             FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -89,21 +120,116 @@ public class LoginActivity extends Activity {
                                         .putString("logged_in_username", username)
                                         .apply();
 
-                                startActivity(new Intent(LoginActivity.this, AdminActivity.class));
-                                finish();
+                                // Success animation
+                                loginCard.animate()
+                                        .alpha(0f)
+                                        .scaleX(0.9f)
+                                        .scaleY(0.9f)
+                                        .setDuration(300)
+                                        .withEndAction(() -> {
+                                            startActivity(new Intent(LoginActivity.this, AdminActivity.class));
+                                            finish();
+                                            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                                        })
+                                        .start();
                             } else {
-                                showError(errorText, "Wrong username or password");
+                                resetLoginButton();
+                                showErrorWithAnimation("Wrong username or password");
                             }
                         } else {
                             // Not found in admin, check in worker
-                            checkWorkerCredentials(db, username, password, errorText);
+                            checkWorkerCredentials(db, username, password);
                         }
+                    })
+                    .addOnFailureListener(e -> {
+                        resetLoginButton();
+                        showErrorWithAnimation("Connection error. Please try again.");
                     });
         });
     }
 
+    private void startAnimations() {
+        // Fade in and slide up animation for login card
+        loginCard.setAlpha(0f);
+        loginCard.setTranslationY(50f);
+        loginCard.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(600)
+                .setInterpolator(new DecelerateInterpolator())
+                .setStartDelay(100)
+                .start();
+
+        // Fade in for input fields
+        usernameField.setAlpha(0f);
+        passwordField.setAlpha(0f);
+        loginBtn.setAlpha(0f);
+
+        usernameField.animate()
+                .alpha(1f)
+                .setDuration(400)
+                .setStartDelay(400)
+                .start();
+
+        passwordField.animate()
+                .alpha(1f)
+                .setDuration(400)
+                .setStartDelay(500)
+                .start();
+
+        loginBtn.animate()
+                .alpha(1f)
+                .setDuration(400)
+                .setStartDelay(600)
+                .start();
+    }
+
+    private void showErrorWithAnimation(String message) {
+        errorText.setText(message);
+        errorText.setVisibility(View.VISIBLE);
+        errorText.setAlpha(0f);
+        errorText.setTranslationX(-20f);
+
+        errorText.animate()
+                .alpha(1f)
+                .translationX(0f)
+                .setDuration(300)
+                .start();
+
+        // Shake animation for card
+        loginCard.animate()
+                .translationX(20f)
+                .setDuration(50)
+                .withEndAction(() ->
+                        loginCard.animate()
+                                .translationX(-20f)
+                                .setDuration(50)
+                                .withEndAction(() ->
+                                        loginCard.animate()
+                                                .translationX(20f)
+                                                .setDuration(50)
+                                                .withEndAction(() ->
+                                                        loginCard.animate()
+                                                                .translationX(0f)
+                                                                .setDuration(50)
+                                                                .start()
+                                                )
+                                                .start()
+                                )
+                                .start()
+                )
+                .start();
+
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void resetLoginButton() {
+        loginBtn.setEnabled(true);
+        loginBtn.setText("Sign In");
+    }
+
     private void showPrivacyPolicyDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DarkAlertDialog);
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_privacy_policy, null);
 
         TextView privacyLink = dialogView.findViewById(R.id.privacy_policy_link);
@@ -111,7 +237,7 @@ public class LoginActivity extends Activity {
         Button buttonOk = dialogView.findViewById(R.id.button_ok);
 
         builder.setView(dialogView);
-        builder.setCancelable(false); // User must accept to continue
+        builder.setCancelable(false);
 
         AlertDialog dialog = builder.create();
 
@@ -126,21 +252,18 @@ public class LoginActivity extends Activity {
         checkboxAccept.setOnCheckedChangeListener((buttonView, isChecked) -> {
             buttonOk.setEnabled(isChecked);
             if (isChecked) {
-                buttonOk.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#1976D2")));
+                buttonOk.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#64B5F6")));
             } else {
-                buttonOk.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#CCCCCC")));
+                buttonOk.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#404040")));
             }
         });
 
         // OK button click
         buttonOk.setOnClickListener(v -> {
             if (checkboxAccept.isChecked()) {
-                // Save acceptance in SharedPreferences
                 SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
                 prefs.edit().putBoolean("privacy_policy_accepted", true).apply();
                 dialog.dismiss();
-
-                // Request storage permission after privacy policy accepted
                 requestStoragePermissionIfNeeded();
             }
         });
@@ -150,7 +273,6 @@ public class LoginActivity extends Activity {
 
     private void requestStoragePermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Android 13+ requires READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, READ_MEDIA_AUDIO
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
                         new String[]{
@@ -161,7 +283,6 @@ public class LoginActivity extends Activity {
                         STORAGE_PERMISSION_CODE);
             }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // Android 6.0 to Android 12
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
@@ -175,14 +296,14 @@ public class LoginActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == STORAGE_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Storage permission granted. You can now view PDFs.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Storage permission granted", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Storage permission denied. PDF viewing may not work properly.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Storage permission denied", Toast.LENGTH_LONG).show();
             }
         }
     }
 
-    private void checkWorkerCredentials(FirebaseFirestore db, String username, String password, TextView errorText) {
+    private void checkWorkerCredentials(FirebaseFirestore db, String username, String password) {
         db.collection("credentials_worker")
                 .whereEqualTo("Username", username)
                 .get()
@@ -204,21 +325,32 @@ public class LoginActivity extends Activity {
                                     .putString("logged_in_username", username)
                                     .apply();
 
-                            Intent intent = new Intent(LoginActivity.this, WorkerActivity.class);
-                            intent.putExtra("username", username);
-                            startActivity(intent);
-                            finish();
+                            // Success animation
+                            loginCard.animate()
+                                    .alpha(0f)
+                                    .scaleX(0.9f)
+                                    .scaleY(0.9f)
+                                    .setDuration(300)
+                                    .withEndAction(() -> {
+                                        Intent intent = new Intent(LoginActivity.this, WorkerActivity.class);
+                                        intent.putExtra("username", username);
+                                        startActivity(intent);
+                                        finish();
+                                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                                    })
+                                    .start();
                         } else {
-                            showError(errorText, "Wrong username or password");
+                            resetLoginButton();
+                            showErrorWithAnimation("Wrong username or password");
                         }
                     } else {
-                        showError(errorText, "Wrong username or password");
+                        resetLoginButton();
+                        showErrorWithAnimation("Wrong username or password");
                     }
+                })
+                .addOnFailureListener(e -> {
+                    resetLoginButton();
+                    showErrorWithAnimation("Connection error. Please try again.");
                 });
-    }
-
-    private void showError(TextView errorText, String message) {
-        errorText.setVisibility(View.VISIBLE);
-        Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 }
