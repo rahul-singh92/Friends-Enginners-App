@@ -29,8 +29,8 @@ import java.util.TimeZone;
 public class WorkerActivity extends AppCompatActivity {
 
     TextView welcomeText;
-    String username; // from login activity
-    String workerName; // store fetched name
+    String username;
+    String workerName;
     FirebaseFirestore db;
 
     @Override
@@ -49,28 +49,25 @@ public class WorkerActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-
         welcomeText = findViewById(R.id.welcome_text);
         username = getIntent().getStringExtra("username");
 
-        // Fetch the worker name from Firestore, then setup UI after name is loaded
         fetchWorkerNameAndSetupUI(username);
     }
 
     private void showUserOptionsDialog() {
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.DarkAlertDialog)
                 .setTitle("User Options")
                 .setItems(new String[]{"Change Password"}, (dialog, which) -> {
-                    if (which == 0) { // Change Password selected
+                    if (which == 0) {
                         showChangePasswordDialog();
                     }
                 })
                 .show();
     }
 
-
     private void showChangePasswordDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DarkAlertDialog);
         builder.setTitle("Change Password");
 
         View viewInflated = LayoutInflater.from(this).inflate(R.layout.dialog_change_password, null, false);
@@ -80,7 +77,7 @@ public class WorkerActivity extends AppCompatActivity {
 
         builder.setView(viewInflated);
 
-        builder.setPositiveButton("OK", null); // will override below
+        builder.setPositiveButton("Change", null);
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
 
         AlertDialog dialog = builder.create();
@@ -184,11 +181,9 @@ public class WorkerActivity extends AppCompatActivity {
     }
 
     private void setupButtons() {
-        // Setup Request Advance Button - Changed from Button to CardView
         CardView requestAdvanceButton = findViewById(R.id.request_advance_button);
         requestAdvanceButton.setOnClickListener(v -> checkRequestLimitAndShowDialog());
 
-        // Total requested Button - Changed from Button to CardView
         CardView totalAdvanceButton = findViewById(R.id.total_advance_button);
         totalAdvanceButton.setOnClickListener(v -> {
             Intent intent = new Intent(WorkerActivity.this, TotalRequestedActivity.class);
@@ -196,7 +191,6 @@ public class WorkerActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // View Schedule Button - Changed from Button to CardView
         CardView viewScheduleBtn = findViewById(R.id.view_schedule_button);
         viewScheduleBtn.setOnClickListener(v -> {
             Intent intent = new Intent(WorkerActivity.this, WorkerScheduleActivity.class);
@@ -204,7 +198,6 @@ public class WorkerActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Setup my detail button - Changed from Button to CardView
         CardView viewMyDetail = findViewById(R.id.my_detail);
         viewMyDetail.setOnClickListener(v -> {
             FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -228,7 +221,6 @@ public class WorkerActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> Toast.makeText(WorkerActivity.this, "Error fetching details: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
 
-        // PF Passbook button - Changed from Button to CardView
         CardView pfPassbookBtn = findViewById(R.id.btn_pf_passbook);
         pfPassbookBtn.setOnClickListener(v -> {
             String url = "https://passbook.epfindia.gov.in/MemberPassBook/login";
@@ -236,7 +228,6 @@ public class WorkerActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // UAN Portal button - Changed from Button to CardView
         CardView uanPortalBtn = findViewById(R.id.btn_uan_portal);
         uanPortalBtn.setOnClickListener(v -> {
             String url = "https://unifiedportal-mem.epfindia.gov.in/memberinterface/";
@@ -244,8 +235,6 @@ public class WorkerActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
-
-    // -------- Firestore Request Limit Check and Dialog -----------
 
     private void checkRequestLimitAndShowDialog() {
         if (workerName == null || workerName.isEmpty()) {
@@ -255,7 +244,6 @@ public class WorkerActivity extends AppCompatActivity {
 
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        // Calculate start and end of current month (IST timezone)
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kolkata"));
         cal.set(Calendar.DAY_OF_MONTH, 1);
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -280,7 +268,7 @@ public class WorkerActivity extends AppCompatActivity {
                 .addOnSuccessListener(querySnapshot -> {
                     int count = querySnapshot.size();
                     if (count >= 2) {
-                        new AlertDialog.Builder(this)
+                        new AlertDialog.Builder(this, R.style.DarkAlertDialog)
                                 .setTitle("Limit Reached")
                                 .setMessage("You have already requested advance 2 times this month. You cannot request more.")
                                 .setPositiveButton("OK", null)
@@ -297,7 +285,7 @@ public class WorkerActivity extends AppCompatActivity {
         final EditText amountInput = dialogView.findViewById(R.id.edit_request_amount);
         final EditText reasonInput = dialogView.findViewById(R.id.edit_reason);
 
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this, R.style.DarkAlertDialog)
                 .setTitle("Request Advance")
                 .setView(dialogView)
                 .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
@@ -310,13 +298,12 @@ public class WorkerActivity extends AppCompatActivity {
                             return;
                         }
 
-                        new AlertDialog.Builder(WorkerActivity.this)
+                        new AlertDialog.Builder(WorkerActivity.this, R.style.DarkAlertDialog)
                                 .setTitle("Confirm Request")
                                 .setMessage("Do you really want to request an advance of ₹" + amount + "?")
                                 .setPositiveButton("Yes", (confDialog, confWhich) -> insertAdvanceRequest(amount, reason))
                                 .setNegativeButton("No", null)
                                 .show();
-
                     }
                 })
                 .setNegativeButton("Cancel", null)
