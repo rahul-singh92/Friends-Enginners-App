@@ -29,7 +29,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
-            android:tint="#808080"
+            app:tint="#808080"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:padding="4dp"
             android:clickable="true"
@@ -76,7 +76,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:src="@android:drawable/ic_menu_upload"
-                        android:tint="#2196F3"
+                        app:tint="#2196F3"
                         android:padding="8dp" />
 
                     <LinearLayout
