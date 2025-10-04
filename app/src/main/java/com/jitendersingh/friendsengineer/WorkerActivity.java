@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,12 +38,22 @@ public class WorkerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_worker);
 
+        // Set up the custom toolbar
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.worker_toolbar);
+        setSupportActionBar(toolbar);
+
+        // Hide default title since we have custom layout
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+
         db = FirebaseFirestore.getInstance();
 
-        ImageView userIcon = findViewById(R.id.user_icon);
+        // Change ImageView to LinearLayout for click listeners
+        LinearLayout userIcon = findViewById(R.id.user_icon);
         userIcon.setOnClickListener(v -> showUserOptionsDialog());
 
-        ImageView messageIcon = findViewById(R.id.message_icon);
+        LinearLayout messageIcon = findViewById(R.id.message_icon);
         messageIcon.setOnClickListener(v -> {
             Intent intent = new Intent(WorkerActivity.this, MessageViewOnlyActivity.class);
             startActivity(intent);
@@ -54,6 +64,7 @@ public class WorkerActivity extends AppCompatActivity {
 
         fetchWorkerNameAndSetupUI(username);
     }
+
 
     private void showUserOptionsDialog() {
         new AlertDialog.Builder(this, R.style.DarkAlertDialog)
