@@ -3,13 +3,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
-    android:padding="16dp">
+    android:background="#1E1E1E"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Back Button -->
+        <LinearLayout
+            android:id="@+id/backButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/win11_circle_button"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_revert"
+                app:tint="#FFFFFF" />
+
+        </LinearLayout>
 
         <!-- Centered Worker Image -->
         <ImageView
@@ -20,304 +41,310 @@
             android:layout_marginBottom="24dp"
             android:contentDescription="Worker Image"
             android:scaleType="centerCrop"
-            android:background="@drawable/circle_background"
+            android:background="@drawable/circle_background_dark"
             android:clipToOutline="true" />
 
-        <!-- Card grouping personal details -->
+        <!-- Worker Details Card -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardCornerRadius="8dp"
-            android:elevation="4dp"
-            android:background="@android:color/white"
-            android:padding="16dp">
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#2D2D2D">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="16dp">
 
-                <!-- Template for each field -->
+                <!-- P. No. -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        android:textColor="#222222"
-                        android:layout_weight="1"
-                        android:paddingStart="16dp"
-                        android:text="P. No." />
-
-                    <TextView
-                        android:id="@+id/textPNo"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textColor="#555555"
-                        android:layout_weight="2"
-                        android:paddingStart="8dp" />
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" />
-
-                <!-- Repeat the field layout for each field below -->
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        android:textColor="#222222"
-                        android:layout_weight="1"
-                        android:paddingStart="16dp"
-                        android:text="ESI No." />
-
-                    <TextView
-                        android:id="@+id/textESINo"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textColor="#555555"
-                        android:layout_weight="2"
-                        android:paddingStart="8dp" />
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        android:textColor="#222222"
-                        android:layout_weight="1"
-                        android:paddingStart="16dp"
-                        android:text="UAN No." />
-
-                    <TextView
-                        android:id="@+id/textUANNo"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textColor="#555555"
-                        android:layout_weight="2"
-                        android:paddingStart="8dp" />
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" />
-
-                <!-- Continue for all other fields with the same pattern -->
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        android:textColor="#222222"
-                        android:layout_weight="1"
-                        android:paddingStart="16dp"
-                        android:text="PF No." />
-
-                    <TextView
-                        android:id="@+id/textPFNo"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textColor="#555555"
-                        android:layout_weight="2"
-                        android:paddingStart="8dp" />
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        android:textColor="#222222"
-                        android:layout_weight="1"
-                        android:paddingStart="16dp"
-                        android:text="Name" />
-
-                    <TextView
-                        android:id="@+id/textName"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textColor="#555555"
-                        android:layout_weight="2"
-                        android:paddingStart="8dp" />
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        android:textColor="#222222"
-                        android:layout_weight="1"
-                        android:paddingStart="16dp"
-                        android:text="Father's Name" />
-
-                    <TextView
-                        android:id="@+id/textFatherName"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textColor="#555555"
-                        android:layout_weight="2"
-                        android:paddingStart="8dp" />
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        android:textColor="#222222"
-                        android:layout_weight="1"
-                        android:paddingStart="16dp"
-                        android:text="Contact" />
-
-                    <TextView
-                        android:id="@+id/textContact"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textColor="#555555"
-                        android:layout_weight="2"
-                        android:paddingStart="8dp" />
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        android:textColor="#222222"
-                        android:layout_weight="1"
-                        android:paddingStart="16dp"
-                        android:text="Date of Joining" />
-
-                    <TextView
-                        android:id="@+id/textDOJ"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textColor="#555555"
-                        android:layout_weight="2"
-                        android:paddingStart="8dp" />
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp"
-                    android:gravity="center_vertical">
+                    android:orientation="vertical"
+                    android:paddingVertical="12dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        android:textColor="#222222"
-                        android:paddingStart="16dp"
-                        android:text="Department"
-                        android:layout_marginEnd="16dp" />
+                        android:text="P. NO."
+                        android:textSize="11sp"
+                        android:textColor="#808080"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
 
                     <TextView
-                        android:id="@+id/textDepartment"
-                        android:layout_width="0dp"
+                        android:id="@+id/textPNo"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:text="-"
                         android:textSize="16sp"
-                        android:textColor="#555555"
-                        android:layout_weight="1"
-                        android:paddingStart="8dp"
-                        android:maxLines="1"
-                        android:ellipsize="end" />
+                        android:textColor="#FFFFFF" />
                 </LinearLayout>
 
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#404040" />
 
-
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" />
-
+                <!-- ESI No. -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp">
+                    android:orientation="vertical"
+                    android:paddingVertical="12dp">
+
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
-                        android:textColor="#222222"
-                        android:layout_weight="1"
-                        android:paddingStart="16dp"
-                        android:text="Date of Leaving" />
+                        android:text="ESI NO."
+                        android:textSize="11sp"
+                        android:textColor="#808080"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textESINo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#404040" />
+
+                <!-- UAN No. -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="UAN NO."
+                        android:textSize="11sp"
+                        android:textColor="#808080"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textUANNo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#404040" />
+
+                <!-- PF No. -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="PF NO."
+                        android:textSize="11sp"
+                        android:textColor="#808080"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textPFNo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#404040" />
+
+                <!-- Name -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="NAME"
+                        android:textSize="11sp"
+                        android:textColor="#808080"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#404040" />
+
+                <!-- Father's Name -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="FATHER'S NAME"
+                        android:textSize="11sp"
+                        android:textColor="#808080"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textFatherName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#404040" />
+
+                <!-- Contact -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CONTACT NUMBER"
+                        android:textSize="11sp"
+                        android:textColor="#808080"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textContact"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#404040" />
+
+                <!-- Date of Joining -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="DATE OF JOINING"
+                        android:textSize="11sp"
+                        android:textColor="#808080"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textDOJ"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#404040" />
+
+                <!-- Department -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="DEPARTMENT"
+                        android:textSize="11sp"
+                        android:textColor="#808080"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/textDepartment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#404040" />
+
+                <!-- Date of Leaving -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="DATE OF LEAVING"
+                        android:textSize="11sp"
+                        android:textColor="#808080"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.05"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="4dp" />
 
                     <TextView
                         android:id="@+id/textDOL"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:text="-"
                         android:textSize="16sp"
-                        android:textColor="#555555"
-                        android:layout_weight="2"
-                        android:paddingStart="8dp" />
+                        android:textColor="#FFFFFF" />
                 </LinearLayout>
 
             </LinearLayout>
