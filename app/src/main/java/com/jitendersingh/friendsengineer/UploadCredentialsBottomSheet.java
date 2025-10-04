@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -52,12 +54,20 @@ public class UploadCredentialsBottomSheet extends BottomSheetDialogFragment {
             FrameLayout bottomSheet = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
 
             if (bottomSheet != null) {
+                //Make background transparent to remove white spots
+                bottomSheet.setBackground(null);
+
                 BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
                 behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                 behavior.setDraggable(false);
                 behavior.setSkipCollapsed(true);
             }
         });
+
+        // Make dialog window background transparent
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
 
         return dialog;
     }

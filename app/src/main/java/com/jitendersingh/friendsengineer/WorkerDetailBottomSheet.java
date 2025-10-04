@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -56,6 +58,9 @@ public class WorkerDetailBottomSheet extends BottomSheetDialogFragment {
             FrameLayout bottomSheet = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
 
             if (bottomSheet != null) {
+                //Make background transparent to remove white spots
+                bottomSheet.setBackground(null);
+
                 BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
 
                 // Set the bottom sheet to expanded state
@@ -71,6 +76,11 @@ public class WorkerDetailBottomSheet extends BottomSheetDialogFragment {
                 behavior.setSkipCollapsed(true);
             }
         });
+
+        // Make dialog window background transparent
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
 
         return dialog;
     }
