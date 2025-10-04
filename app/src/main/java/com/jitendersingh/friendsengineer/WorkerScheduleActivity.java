@@ -6,17 +6,15 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
+import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -32,6 +30,10 @@ public class WorkerScheduleActivity extends AppCompatActivity {
 
     private ListView listView;
     private ProgressBar progressBar;
+    private LinearLayout emptyStateLayout;
+    private LinearLayout backButton;
+    private TextView tvDepartment;
+    private TextView scheduleCount;
 
     private FirebaseFirestore firestore;
 
@@ -39,8 +41,7 @@ public class WorkerScheduleActivity extends AppCompatActivity {
     private String department;
 
     private List<ScheduleItem> scheduleItems = new ArrayList<>();
-    private ArrayAdapter<String> adapter;
-    private List<String> displayList = new ArrayList<>();
+    private ScheduleAdapter adapter;
 
     private static final SimpleDateFormat firestoreDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
     private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.US);
@@ -50,8 +51,21 @@ public class WorkerScheduleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_worker_schedule);
 
+        // Hide action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
+        // Initialize views
         listView = findViewById(R.id.schedule_listview);
         progressBar = findViewById(R.id.progressBar);
+        emptyStateLayout = findViewById(R.id.emptyStateLayout);
+        backButton = findViewById(R.id.backButton);
+        tvDepartment = findViewById(R.id.tv_department);
+        scheduleCount = findViewById(R.id.scheduleCount);
+
+        // Back button handler
+        backButton.setOnClickListener(v -> finish());
 
         firestore = FirebaseFirestore.getInstance();
 
@@ -75,18 +89,22 @@ public class WorkerScheduleActivity extends AppCompatActivity {
                         DocumentSnapshot doc = queryDocumentSnapshots.getDocuments().get(0);
                         department = doc.getString("Department");
                         if (department != null && !department.isEmpty()) {
+                            tvDepartment.setText(department + " Department");
                             fetchSchedulesForDepartment(department);
                         } else {
                             progressBar.setVisibility(ProgressBar.GONE);
+                            tvDepartment.setText("No department");
                             Toast.makeText(this, "Department not found", Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         progressBar.setVisibility(ProgressBar.GONE);
+                        tvDepartment.setText("No department");
                         Toast.makeText(this, "Worker details not found", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(ProgressBar.GONE);
+                    tvDepartment.setText("Error loading");
                     Toast.makeText(this, "Error fetching department: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
@@ -98,7 +116,6 @@ public class WorkerScheduleActivity extends AppCompatActivity {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     progressBar.setVisibility(ProgressBar.GONE);
                     scheduleItems.clear();
-                    displayList.clear();
 
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         String pdfUrl = doc.getString("pdfUrl");
@@ -108,26 +125,29 @@ public class WorkerScheduleActivity extends AppCompatActivity {
                         String displayStartDate = formatDate(startDateStr);
                         String displayEndDate = formatDate(endDateStr);
 
-                        String displayName = department + " | " + displayStartDate + " - " + displayEndDate;
-
-                        scheduleItems.add(new ScheduleItem(doc.getId(), pdfUrl, displayName));
-                        displayList.add(displayName);
+                        scheduleItems.add(new ScheduleItem(doc.getId(), pdfUrl, department, displayStartDate, displayEndDate));
                     }
 
-                    adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, displayList);
-                    listView.setAdapter(adapter);
+                    // Update schedule count
+                    scheduleCount.setText(String.valueOf(scheduleItems.size()));
 
-                    listView.setOnItemClickListener((parent, view, position, id) -> {
-                        ScheduleItem item = scheduleItems.get(position);
-                        openPdf(item.pdfUrl);
-                    });
-
+                    // Show/hide empty state
                     if (scheduleItems.isEmpty()) {
-                        Toast.makeText(this, "No schedules found for department: " + department, Toast.LENGTH_SHORT).show();
+                        emptyStateLayout.setVisibility(LinearLayout.VISIBLE);
+                        listView.setVisibility(ListView.GONE);
+                    } else {
+                        emptyStateLayout.setVisibility(LinearLayout.GONE);
+                        listView.setVisibility(ListView.VISIBLE);
+
+                        adapter = new ScheduleAdapter();
+                        listView.setAdapter(adapter);
                     }
                 })
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(ProgressBar.GONE);
+                    scheduleCount.setText("0");
+                    emptyStateLayout.setVisibility(LinearLayout.VISIBLE);
+                    listView.setVisibility(ListView.GONE);
                     Toast.makeText(this, "Error fetching schedules: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
@@ -160,102 +180,54 @@ public class WorkerScheduleActivity extends AppCompatActivity {
     private static class ScheduleItem {
         String documentId;
         String pdfUrl;
-        String displayName;
+        String department;
+        String startDate;
+        String endDate;
 
-        ScheduleItem(String documentId, String pdfUrl, String displayName) {
+        ScheduleItem(String documentId, String pdfUrl, String department, String startDate, String endDate) {
             this.documentId = documentId;
             this.pdfUrl = pdfUrl;
-            this.displayName = displayName;
+            this.department = department;
+            this.startDate = startDate;
+            this.endDate = endDate;
         }
     }
 
-    public static class DataRecordAdapter extends RecyclerView.Adapter<DataRecordAdapter.ViewHolder> {
+    private class ScheduleAdapter extends BaseAdapter {
 
-        private List<DataListActivity.DataItem> dataItems;
-        private OnItemClickListener clickListener;
-        private OnItemLongClickListener longClickListener;
-
-        public interface OnItemClickListener {
-            void onItemClick(DataListActivity.DataItem item);
-        }
-
-        public interface OnItemLongClickListener {
-            void onItemLongClick(DataListActivity.DataItem item);
-        }
-
-        public DataRecordAdapter(List<DataListActivity.DataItem> dataItems,
-                                 OnItemClickListener clickListener,
-                                 OnItemLongClickListener longClickListener) {
-            this.dataItems = dataItems;
-            this.clickListener = clickListener;
-            this.longClickListener = longClickListener;
-        }
-
-        @NonNull
         @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_data_record, parent, false);
-            return new ViewHolder(view);
+        public int getCount() {
+            return scheduleItems.size();
         }
 
         @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            DataListActivity.DataItem item = dataItems.get(position);
+        public ScheduleItem getItem(int position) {
+            return scheduleItems.get(position);
+        }
 
-            // Set name
-            String name = item.getName() != null ? item.getName() : "N/A";
-            holder.nameText.setText(name);
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
 
-            // Set father's name
-            String fatherName = item.getFatherName() != null ? item.getFatherName() : "N/A";
-            holder.fatherNameText.setText("Father: " + fatherName);
-
-            // Set initial
-            if (name != null && !name.isEmpty() && !name.equals("N/A")) {
-                holder.initialText.setText(String.valueOf(name.charAt(0)).toUpperCase());
-            } else {
-                holder.initialText.setText("?");
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = LayoutInflater.from(WorkerScheduleActivity.this)
+                        .inflate(R.layout.item_schedule, parent, false);
             }
 
-            // Click listener
-            holder.itemView.setOnClickListener(v -> {
-                if (clickListener != null) {
-                    clickListener.onItemClick(item);
-                }
-            });
+            ScheduleItem item = getItem(position);
 
-            // Long click on more options button
-            holder.moreOptions.setOnClickListener(v -> {
-                if (longClickListener != null) {
-                    longClickListener.onItemLongClick(item);
-                }
-            });
-        }
+            TextView txtDepartment = convertView.findViewById(R.id.txt_department);
+            TextView txtDateRange = convertView.findViewById(R.id.txt_date_range);
 
-        @Override
-        public int getItemCount() {
-            return dataItems.size();
-        }
+            txtDepartment.setText(item.department);
+            txtDateRange.setText(item.startDate + " - " + item.endDate);
 
-        public void updateData(List<DataListActivity.DataItem> newData) {
-            this.dataItems = newData;
-            notifyDataSetChanged();
-        }
+            convertView.setOnClickListener(v -> openPdf(item.pdfUrl));
 
-        static class ViewHolder extends RecyclerView.ViewHolder {
-            TextView nameText;
-            TextView fatherNameText;
-            TextView initialText;
-            ImageView moreOptions;
-
-            ViewHolder(@NonNull View itemView) {
-                super(itemView);
-                nameText = itemView.findViewById(R.id.recordName);
-                fatherNameText = itemView.findViewById(R.id.recordFatherName);
-                initialText = itemView.findViewById(R.id.userInitial);
-                moreOptions = itemView.findViewById(R.id.moreOptions);
-            }
+            return convertView;
         }
     }
 }
