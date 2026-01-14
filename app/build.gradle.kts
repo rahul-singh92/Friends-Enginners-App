@@ -5,13 +5,13 @@ plugins {
 
 android {
     namespace = "com.jitendersingh.friendsengineer"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.jitendersingh.friendsengineer"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 2
+        targetSdk = 35
+        versionCode = 3
         versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
