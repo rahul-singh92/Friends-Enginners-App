@@ -15,7 +15,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Map;
 
-public class DataDetailActivity extends AppCompatActivity {
+public class DataDetailActivity extends BaseActivity {
 
     private static final String TAG = "DataDetailActivity";
     private String collectionName;
@@ -29,6 +29,8 @@ public class DataDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_detail);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar
         if (getSupportActionBar() != null) {

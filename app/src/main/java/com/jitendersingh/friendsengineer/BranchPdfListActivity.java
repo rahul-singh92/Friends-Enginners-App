@@ -17,7 +17,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BranchPdfListActivity extends AppCompatActivity {
+public class BranchPdfListActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private LinearLayout emptyState;
@@ -33,6 +33,8 @@ public class BranchPdfListActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_branch_pdf_list);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar for modern look
         if (getSupportActionBar() != null) {

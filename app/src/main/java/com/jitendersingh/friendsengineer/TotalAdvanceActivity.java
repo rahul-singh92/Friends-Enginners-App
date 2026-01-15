@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TotalAdvanceActivity extends AppCompatActivity {
+public class TotalAdvanceActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private LinearLayout emptyStateLayout;
@@ -34,6 +34,8 @@ public class TotalAdvanceActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_total_advance);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar
         if (getSupportActionBar() != null) {

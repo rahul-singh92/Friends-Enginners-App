@@ -29,7 +29,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-public class DataListActivity extends AppCompatActivity {
+public class DataListActivity extends  BaseActivity{
 
     private static final String TAG = "DataListActivity";
     private String collectionName;
@@ -48,6 +48,8 @@ public class DataListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_list);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar
         if (getSupportActionBar() != null) {

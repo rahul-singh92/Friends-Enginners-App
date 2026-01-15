@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CredentialsDetailsActivity extends AppCompatActivity {
+public class CredentialsDetailsActivity extends BaseActivity {
 
     private TextView headerTextView;
     private TextView headerSubtitle;
@@ -39,6 +39,8 @@ public class CredentialsDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_credentials_details);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar
         if (getSupportActionBar() != null) {

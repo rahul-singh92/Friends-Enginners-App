@@ -14,7 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
-public class CredentialsTablesActivity extends AppCompatActivity {
+public class CredentialsTablesActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private LinearLayout emptyState;
@@ -28,6 +28,8 @@ public class CredentialsTablesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_credentials_tables);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar for modern look
         if (getSupportActionBar() != null) {

@@ -17,7 +17,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WageCollectionsActivity extends AppCompatActivity {
+public class WageCollectionsActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private WageCollectionAdapter adapter;
@@ -30,6 +30,8 @@ public class WageCollectionsActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wage_collections);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar for modern look
         if (getSupportActionBar() != null) {

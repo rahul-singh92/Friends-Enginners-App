@@ -16,7 +16,7 @@ import androidx.cardview.widget.CardView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-public class AdminActivity extends AppCompatActivity {
+public class AdminActivity extends BaseActivity {
 
     private FirebaseFirestore db;
 
@@ -24,6 +24,8 @@ public class AdminActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Set up the custom toolbar
         Toolbar toolbar = findViewById(R.id.admin_toolbar);

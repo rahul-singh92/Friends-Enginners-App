@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageActivity extends AppCompatActivity {
+public class MessageActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private EditText inputMessage;
@@ -36,6 +36,8 @@ public class MessageActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar
         if (getSupportActionBar() != null) {

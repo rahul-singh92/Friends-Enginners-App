@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class WorkerDetailActivity extends AppCompatActivity {
+public class WorkerDetailActivity extends BaseActivity {
 
     private ImageView workerImage;
     private TextView headerName, headerDepartment;
@@ -25,6 +25,8 @@ public class WorkerDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_worker_detail);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar
         if (getSupportActionBar() != null) {

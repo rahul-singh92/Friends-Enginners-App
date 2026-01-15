@@ -18,7 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ViewWorkerDetailsActivity extends AppCompatActivity {
+public class ViewWorkerDetailsActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private LinearLayout emptyState;
@@ -32,6 +32,8 @@ public class ViewWorkerDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_worker_details);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar
         if (getSupportActionBar() != null) {

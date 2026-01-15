@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.Arrays;
 import java.util.List;
 
-public class BranchListActivity extends AppCompatActivity {
+public class BranchListActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private LinearLayout emptyState;
@@ -25,6 +25,8 @@ public class BranchListActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_branch_list);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar for modern look
         if (getSupportActionBar() != null) {

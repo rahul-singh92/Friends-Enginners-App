@@ -16,7 +16,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TableListActivity extends AppCompatActivity {
+public class TableListActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private LinearLayout emptyState;
@@ -29,6 +29,8 @@ public class TableListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_table_list);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar for modern look
         if (getSupportActionBar() != null) {
