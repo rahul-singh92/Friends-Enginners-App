@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-public class WorkerActivity extends AppCompatActivity {
+public class WorkerActivity extends BaseActivity {
 
     TextView welcomeText;
     String username;
@@ -37,6 +37,8 @@ public class WorkerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_worker);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Set up the custom toolbar
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.worker_toolbar);

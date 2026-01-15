@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class TotalRequestedActivity extends AppCompatActivity {
+public class TotalRequestedActivity extends BaseActivity{
 
     private RecyclerView recyclerView;
     private LinearLayout emptyStateLayout;
@@ -31,6 +31,8 @@ public class TotalRequestedActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_total_requested);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar
         if (getSupportActionBar() != null) {

@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class WorkerScheduleActivity extends AppCompatActivity {
+public class WorkerScheduleActivity extends BaseActivity {
 
     private ListView listView;
     private ProgressBar progressBar;
@@ -50,6 +50,8 @@ public class WorkerScheduleActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_worker_schedule);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         // Hide action bar
         if (getSupportActionBar() != null) {

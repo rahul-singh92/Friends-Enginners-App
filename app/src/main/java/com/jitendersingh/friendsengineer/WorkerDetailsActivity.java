@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class WorkerDetailsActivity extends Activity {
+public class WorkerDetailsActivity extends BaseActivity {
 
     String name, fatherName;
 
@@ -26,6 +26,8 @@ public class WorkerDetailsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_worker_details);
+
+        applyEdgeToEdge(R.id.root_layout);
 
         name = getIntent().getStringExtra("name");
         fatherName = getIntent().getStringExtra("father_name");
