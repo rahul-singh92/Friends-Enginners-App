@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,11 +22,15 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.jitendersingh.friendsengineer.adapters.TotalAdvanceAdapter;
 import com.jitendersingh.friendsengineer.models.Worker;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class TotalAdvanceActivity extends BaseActivity {
@@ -65,7 +70,6 @@ public class TotalAdvanceActivity extends BaseActivity {
         backButton.setOnClickListener(v -> finish());
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
         firestore = FirebaseFirestore.getInstance();
 
         // Spinner Filters
@@ -128,7 +132,7 @@ public class TotalAdvanceActivity extends BaseActivity {
                         String requestTime = "";
 
                         if (ts != null) {
-                            requestTime = String.valueOf(ts.toDate().getTime()); // milliseconds stored in String
+                            requestTime = String.valueOf(ts.toDate().getTime());
                         }
 
                         if (name == null || amountStr == null) continue;
@@ -228,6 +232,12 @@ public class TotalAdvanceActivity extends BaseActivity {
             recyclerView.setVisibility(View.VISIBLE);
 
             adapter = new TotalAdvanceAdapter(totalAdvanceList);
+
+            // CLICK LISTENER FOR POPUP
+            adapter.setOnWorkerClickListener(worker -> {
+                showAdvancePopup(worker.getName());
+            });
+
             recyclerView.setAdapter(adapter);
         }
     }
@@ -268,5 +278,145 @@ public class TotalAdvanceActivity extends BaseActivity {
         }
 
         return true;
+    }
+
+    // ================= POPUP LOGIC ==================
+
+    private void showAdvancePopup(String workerName) {
+
+        String filterType = filterSpinner.getSelectedItem().toString();
+
+        List<Worker> workerRecords = new ArrayList<>();
+
+        // collect all records of that worker
+        for (Worker w : originalList) {
+            if (w.getName() != null && w.getName().equalsIgnoreCase(workerName)) {
+                workerRecords.add(w);
+            }
+        }
+
+        if (workerRecords.isEmpty()) {
+            Toast.makeText(this, "No records found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // sort by date latest first
+        Collections.sort(workerRecords, new Comparator<Worker>() {
+            @Override
+            public int compare(Worker o1, Worker o2) {
+                long t1 = getMillis(o1.getRequestTime());
+                long t2 = getMillis(o2.getRequestTime());
+                return Long.compare(t2, t1);
+            }
+        });
+
+        StringBuilder details = new StringBuilder();
+
+        if (filterType.equals("All")) {
+            details.append("All Advances:\n\n");
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+
+            for (Worker w : workerRecords) {
+                String dateStr = "Unknown";
+                try {
+                    long millis = Long.parseLong(w.getRequestTime());
+                    dateStr = sdf.format(new Date(millis));
+                } catch (Exception ignored) {}
+
+                details.append("₹")
+                        .append(w.getAmount())
+                        .append("  -  ")
+                        .append(dateStr)
+                        .append("\n");
+            }
+
+        } else {
+
+            Map<String, Integer> grouped = new HashMap<>();
+
+            for (Worker w : workerRecords) {
+                String key = getGroupKey(w.getRequestTime(), filterType);
+
+                int amt = 0;
+                try {
+                    amt = Integer.parseInt(w.getAmount());
+                } catch (Exception ignored) {}
+
+                grouped.put(key, grouped.getOrDefault(key, 0) + amt);
+            }
+
+            details.append(filterType).append(" Summary:\n\n");
+
+            // sort keys (for Month/Year etc.)
+            List<String> keys = new ArrayList<>(grouped.keySet());
+            Collections.sort(keys);
+
+            for (String key : keys) {
+                details.append(key)
+                        .append(" : ₹")
+                        .append(grouped.get(key))
+                        .append("\n");
+            }
+        }
+
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_advance_details, null);
+
+        TextView dialogTitle = dialogView.findViewById(R.id.dialogTitle);
+        TextView dialogSubTitle = dialogView.findViewById(R.id.dialogSubTitle);
+        TextView dialogDetails = dialogView.findViewById(R.id.dialogDetails);
+        TextView btnClose = dialogView.findViewById(R.id.btnClose);
+
+        dialogTitle.setText("Advance Details");
+        dialogSubTitle.setText(workerName + " (" + filterType + ")");
+        dialogDetails.setText(details.toString());
+
+        AlertDialog dialog = new AlertDialog.Builder(this, R.style.DarkDialogTheme)
+                .setView(dialogView)
+                .create();
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private long getMillis(String requestTime) {
+        if (requestTime == null || requestTime.isEmpty()) return 0;
+        try {
+            return Long.parseLong(requestTime);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private String getGroupKey(String requestTime, String filterType) {
+
+        long millis = getMillis(requestTime);
+        if (millis == 0) return "Unknown";
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(millis);
+
+        if (filterType.equals("Day")) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+            return sdf.format(new Date(millis));
+        }
+
+        if (filterType.equals("Week")) {
+            int week = cal.get(Calendar.WEEK_OF_YEAR);
+            int year = cal.get(Calendar.YEAR);
+            return "Week " + week + " (" + year + ")";
+        }
+
+        if (filterType.equals("Month")) {
+            SimpleDateFormat sdf = new SimpleDateFormat("MMM yyyy", Locale.getDefault());
+            return sdf.format(new Date(millis));
+        }
+
+        if (filterType.equals("Year")) {
+            return String.valueOf(cal.get(Calendar.YEAR));
+        }
+
+        return "Unknown";
     }
 }

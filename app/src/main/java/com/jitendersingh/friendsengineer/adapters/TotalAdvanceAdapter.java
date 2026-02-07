@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,6 +19,18 @@ public class TotalAdvanceAdapter extends RecyclerView.Adapter<TotalAdvanceAdapte
 
     private List<Worker> workerList;
 
+    // ✅ Click Listener Interface
+    public interface OnWorkerClickListener {
+        void onWorkerClick(Worker worker);
+    }
+
+    private OnWorkerClickListener listener;
+
+    // ✅ Setter method
+    public void setOnWorkerClickListener(OnWorkerClickListener listener) {
+        this.listener = listener;
+    }
+
     public TotalAdvanceAdapter(List<Worker> workerList) {
         this.workerList = workerList;
     }
@@ -25,13 +38,16 @@ public class TotalAdvanceAdapter extends RecyclerView.Adapter<TotalAdvanceAdapte
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_total_advance, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_total_advance, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+
         Worker worker = workerList.get(position);
+
         holder.name.setText(worker.getName());
         holder.fatherName.setText(worker.getFatherName());
 
@@ -42,6 +58,13 @@ public class TotalAdvanceAdapter extends RecyclerView.Adapter<TotalAdvanceAdapte
         } catch (NumberFormatException e) {
             holder.totalAdvance.setText("₹0");
         }
+
+        // ✅ Click Event
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onWorkerClick(worker);
+            }
+        });
     }
 
     @Override
@@ -50,10 +73,12 @@ public class TotalAdvanceAdapter extends RecyclerView.Adapter<TotalAdvanceAdapte
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+
         TextView name, fatherName, totalAdvance;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+
             name = itemView.findViewById(R.id.text_name);
             fatherName = itemView.findViewById(R.id.text_father_name);
             totalAdvance = itemView.findViewById(R.id.text_total_advance);
