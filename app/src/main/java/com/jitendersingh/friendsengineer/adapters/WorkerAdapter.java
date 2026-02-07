@@ -19,17 +19,14 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
     private OnItemClickListener listener;
     private OnItemLongClickListener longClickListener;
 
-    // Existing interface for click callbacks
     public interface OnItemClickListener {
         void onItemClick(Worker worker, int position);
     }
 
-    // New interface for long click callbacks
     public interface OnItemLongClickListener {
         void onItemLongClick(Worker worker, int position);
     }
 
-    // Setters for listeners
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
@@ -52,12 +49,16 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
 
     @Override
     public void onBindViewHolder(@NonNull WorkerViewHolder holder, int position) {
+
         Worker worker = workerList.get(position);
+
         holder.nameText.setText(worker.getName());
         holder.fatherNameText.setText(worker.getFatherName());
         holder.amountText.setText("₹" + worker.getAmount());
         holder.reasonText.setText(worker.getReason());
-        holder.timeText.setText(worker.getRequestTime());
+
+        // ✅ Show formatted date: dd-MM-yyyy HH:mm:ss
+        holder.timeText.setText(worker.getFormattedRequestTime());
 
         // Click listener
         holder.itemView.setOnClickListener(v -> {
@@ -70,7 +71,7 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
         holder.itemView.setOnLongClickListener(v -> {
             if (longClickListener != null) {
                 longClickListener.onItemLongClick(worker, position);
-                return true; // Consume event
+                return true;
             }
             return false;
         });
@@ -82,10 +83,12 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
     }
 
     static class WorkerViewHolder extends RecyclerView.ViewHolder {
+
         TextView nameText, fatherNameText, amountText, reasonText, timeText;
 
         public WorkerViewHolder(@NonNull View itemView) {
             super(itemView);
+
             nameText = itemView.findViewById(R.id.worker_name);
             fatherNameText = itemView.findViewById(R.id.worker_father_name);
             amountText = itemView.findViewById(R.id.worker_amount);

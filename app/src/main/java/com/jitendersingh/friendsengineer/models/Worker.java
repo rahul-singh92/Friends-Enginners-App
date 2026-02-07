@@ -1,6 +1,11 @@
 package com.jitendersingh.friendsengineer.models;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class Worker {
+
     private String docId;
     private String name;
     private String fatherName;
@@ -24,6 +29,27 @@ public class Worker {
     public String getFatherName() { return fatherName; }
     public String getAmount() { return amount; }
     public String getReason() { return reason; }
+
     public String getRequestTime() { return requestTime; }
     public void setRequestTime(String requestTime) { this.requestTime = requestTime; }
+
+    // ✅ Converts requestTime string into millis
+    public long getRequestTimeMillis() {
+        if (requestTime == null || requestTime.isEmpty()) return 0;
+
+        try {
+            return Long.parseLong(requestTime); // if stored as millis
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    // ✅ Returns formatted date for UI
+    public String getFormattedRequestTime() {
+        long millis = getRequestTimeMillis();
+        if (millis == 0) return "Unknown";
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss a", Locale.getDefault());
+        return sdf.format(new Date(millis));
+    }
 }

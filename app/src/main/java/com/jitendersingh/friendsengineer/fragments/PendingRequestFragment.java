@@ -19,20 +19,20 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.jitendersingh.friendsengineer.AdvanceRequestActivity;
 import com.jitendersingh.friendsengineer.R;
+import com.jitendersingh.friendsengineer.RefreshableFragment;
 import com.jitendersingh.friendsengineer.adapters.WorkerAdapter;
 import com.jitendersingh.friendsengineer.models.Worker;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 
-public class PendingRequestFragment extends Fragment {
+public class PendingRequestFragment extends Fragment implements RefreshableFragment {
 
     private RecyclerView recyclerView;
     private WorkerAdapter adapter;
@@ -40,9 +40,8 @@ public class PendingRequestFragment extends Fragment {
 
     private FirebaseFirestore firestore;
 
-    public PendingRequestFragment() {
-        // Required empty public constructor
-    }
+    private List<Worker> originalList = new ArrayList<>();
+    private List<Worker> filteredList = new ArrayList<>();
 
     @Nullable
     @Override
@@ -53,10 +52,11 @@ public class PendingRequestFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+
         recyclerView = view.findViewById(R.id.recycler_pending);
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         firestore = FirebaseFirestore.getInstance();
 
         loadPendingRequestsFromFirestore();
@@ -65,12 +65,14 @@ public class PendingRequestFragment extends Fragment {
     private void loadPendingRequestsFromFirestore() {
         firestore.collection("Requested_Amount")
                 .whereEqualTo("Status", "Pending")
-                .orderBy("RequestTime", Query.Direction.ASCENDING)
+                .orderBy("RequestTime", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    List<Worker> pendingList = new ArrayList<>();
+
+                    originalList.clear();
 
                     for (QueryDocumentSnapshot doc : querySnapshot) {
+
                         String docId = doc.getId();
                         String name = doc.getString("Name");
                         String fatherName = doc.getString("FatherName");
@@ -79,37 +81,103 @@ public class PendingRequestFragment extends Fragment {
 
                         Timestamp ts = doc.getTimestamp("RequestTime");
                         String requestTime = "";
+
                         if (ts != null) {
-                            Date date = ts.toDate();
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
-                            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
-                            requestTime = sdf.format(date);
+                            requestTime = String.valueOf(ts.toDate().getTime()); // millis string
                         }
 
-                        if (name != null && fatherName != null && amount != null && reason != null && !requestTime.isEmpty()) {
-                            pendingList.add(new Worker(docId, name, fatherName, amount, reason, requestTime));
+                        if (name != null && fatherName != null && amount != null && reason != null) {
+                            originalList.add(new Worker(docId, name, fatherName, amount, reason, requestTime));
                         }
                     }
 
-                    if (pendingList.isEmpty()) {
-                        emptyStateLayout.setVisibility(View.VISIBLE);
-                        recyclerView.setVisibility(View.GONE);
-                    } else {
-                        emptyStateLayout.setVisibility(View.GONE);
-                        recyclerView.setVisibility(View.VISIBLE);
-
-                        adapter = new WorkerAdapter(pendingList);
-                        recyclerView.setAdapter(adapter);
-
-                        adapter.setOnItemClickListener((worker, position) -> showRequestOptionsDialog(worker, position));
-                    }
+                    applySearchAndFilter();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Failed to load requests: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 
+    @Override
+    public void applySearchAndFilter() {
+
+        String searchText = AdvanceRequestActivity.currentSearchText;
+        String filterType = AdvanceRequestActivity.currentFilterType;
+
+        filteredList.clear();
+
+        for (Worker worker : originalList) {
+
+            String name = worker.getName() != null ? worker.getName().toLowerCase() : "";
+            String father = worker.getFatherName() != null ? worker.getFatherName().toLowerCase() : "";
+
+            boolean matchesSearch = searchText.isEmpty()
+                    || name.contains(searchText)
+                    || father.contains(searchText);
+
+            if (!matchesSearch) continue;
+
+            if (!filterType.equals("All")) {
+                if (!isWithinFilter(worker.getRequestTime(), filterType)) continue;
+            }
+
+            filteredList.add(worker);
+        }
+
+        if (filteredList.isEmpty()) {
+            emptyStateLayout.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyStateLayout.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+
+            adapter = new WorkerAdapter(filteredList);
+            recyclerView.setAdapter(adapter);
+
+            adapter.setOnItemClickListener((worker, position) -> showRequestOptionsDialog(worker, position));
+        }
+    }
+
+    private boolean isWithinFilter(String requestTime, String filterType) {
+
+        if (requestTime == null || requestTime.isEmpty()) return false;
+
+        long millis;
+        try {
+            millis = Long.parseLong(requestTime);
+        } catch (Exception e) {
+            return false;
+        }
+
+        Date requestDate = new Date(millis);
+
+        Calendar recordCal = Calendar.getInstance();
+        recordCal.setTime(requestDate);
+
+        Calendar now = Calendar.getInstance();
+
+        switch (filterType) {
+            case "Day":
+                return recordCal.get(Calendar.YEAR) == now.get(Calendar.YEAR)
+                        && recordCal.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR);
+
+            case "Week":
+                return recordCal.get(Calendar.YEAR) == now.get(Calendar.YEAR)
+                        && recordCal.get(Calendar.WEEK_OF_YEAR) == now.get(Calendar.WEEK_OF_YEAR);
+
+            case "Month":
+                return recordCal.get(Calendar.YEAR) == now.get(Calendar.YEAR)
+                        && recordCal.get(Calendar.MONTH) == now.get(Calendar.MONTH);
+
+            case "Year":
+                return recordCal.get(Calendar.YEAR) == now.get(Calendar.YEAR);
+        }
+
+        return true;
+    }
+
     private void showRequestOptionsDialog(Worker worker, int position) {
+
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.DarkAlertDialog);
         builder.setTitle("Request from " + worker.getName());
         builder.setMessage("Amount: ₹" + worker.getAmount() + "\nReason: " + worker.getReason());
@@ -121,10 +189,10 @@ public class PendingRequestFragment extends Fragment {
                     .update("Status", "Rejected")
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(getContext(), "Request rejected", Toast.LENGTH_SHORT).show();
-                        removeItemFromList(position);
+                        loadPendingRequestsFromFirestore();
                     })
                     .addOnFailureListener(e -> {
-                        Toast.makeText(getContext(), "Failed to reject request: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
 
             dialog.dismiss();
@@ -136,6 +204,7 @@ public class PendingRequestFragment extends Fragment {
         dialog.show();
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+
             AlertDialog.Builder inputDialogBuilder = new AlertDialog.Builder(requireContext(), R.style.DarkAlertDialog);
             inputDialogBuilder.setTitle("Enter Accepted Amount");
 
@@ -143,6 +212,7 @@ public class PendingRequestFragment extends Fragment {
             inputDialogBuilder.setView(inputView);
 
             inputDialogBuilder.setPositiveButton("Submit", (d, w) -> {
+
                 TextView inputField = inputView.findViewById(R.id.accepted_amount);
                 String enteredAmount = inputField.getText().toString().trim();
                 String finalAmount = enteredAmount.isEmpty() ? worker.getAmount() : enteredAmount;
@@ -155,11 +225,11 @@ public class PendingRequestFragment extends Fragment {
                         .document(worker.getDocId())
                         .update(updates)
                         .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(getContext(), "Request accepted for ₹" + finalAmount, Toast.LENGTH_SHORT).show();
-                            removeItemFromList(position);
+                            Toast.makeText(getContext(), "Accepted ₹" + finalAmount, Toast.LENGTH_SHORT).show();
+                            loadPendingRequestsFromFirestore();
                         })
                         .addOnFailureListener(e -> {
-                            Toast.makeText(getContext(), "Failed to accept request: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         });
 
                 d.dismiss();
@@ -171,18 +241,5 @@ public class PendingRequestFragment extends Fragment {
             AlertDialog inputDialog = inputDialogBuilder.create();
             inputDialog.show();
         });
-    }
-
-    private void removeItemFromList(int position) {
-        if (adapter != null) {
-            adapter.workerList.remove(position);
-            adapter.notifyItemRemoved(position);
-            adapter.notifyItemRangeChanged(position, adapter.getItemCount());
-
-            if (adapter.getItemCount() == 0) {
-                emptyStateLayout.setVisibility(View.VISIBLE);
-                recyclerView.setVisibility(View.GONE);
-            }
-        }
     }
 }
