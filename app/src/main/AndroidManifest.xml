@@ -87,7 +87,8 @@
             android:exported="false" />
         <activity android:name=".MessageActivity" />
         <activity android:name=".MessageViewOnlyActivity" />
-
+        <activity android:name=".WageSlipActivity" />
+        <activity android:name=".WageSlipDetailActivity" />
     </application>
 
 </manifest>

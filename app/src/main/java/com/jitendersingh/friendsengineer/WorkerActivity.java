@@ -234,6 +234,13 @@ public class WorkerActivity extends BaseActivity {
                     .addOnFailureListener(e -> Toast.makeText(WorkerActivity.this, "Error fetching details: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
 
+        CardView wageSlipBtn = findViewById(R.id.btn_wage_slip);
+        wageSlipBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(WorkerActivity.this, WageSlipActivity.class);
+            intent.putExtra("username", username);
+            startActivity(intent);
+        });
+
         CardView pfPassbookBtn = findViewById(R.id.btn_pf_passbook);
         pfPassbookBtn.setOnClickListener(v -> {
             String url = "https://passbook.epfindia.gov.in/MemberPassBook/login";

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+    android:padding="16dp"
+    android:orientation="vertical"
+    android:background="@drawable/win11_card_background"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <TextView
+        android:id="@+id/text_collection_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="WAGE SLIP"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:fontFamily="sans-serif-medium" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tap to view your wage slip"
+        android:textColor="#808080"
+        android:textSize="13sp"
+        android:layout_marginTop="6dp" />
+
+</LinearLayout>

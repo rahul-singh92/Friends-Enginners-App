@@ -13,12 +13,10 @@
         android:orientation="vertical"
         android:paddingBottom="32dp">
 
-        <!-- Modern Toolbar -->
         <include
             android:id="@+id/worker_toolbar"
             layout="@layout/worker_toolbar" />
 
-        <!-- Welcome Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -46,14 +44,13 @@
 
         </LinearLayout>
 
-        <!-- Main Content -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- PERSONAL Section -->
+            <!-- PERSONAL -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -66,12 +63,12 @@
                 android:layout_marginBottom="12dp"
                 android:layout_marginStart="4dp" />
 
-            <!-- Row 1: My Details & Schedule -->
+            <!-- Row 1 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="12dp">
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/my_detail"
@@ -153,7 +150,46 @@
 
             </LinearLayout>
 
-            <!-- FINANCE Section -->
+            <!-- Wage Slip Button -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/btn_wage_slip"
+                android:layout_width="match_parent"
+                android:layout_height="110dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#2D2D2D"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/description"
+                        app:tint="#64B5F6"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Wage Slip"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textAlignment="center" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- FINANCE -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -166,7 +202,6 @@
                 android:layout_marginBottom="12dp"
                 android:layout_marginStart="4dp" />
 
-            <!-- Row 2: Request & Total Advance -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -253,7 +288,7 @@
 
             </LinearLayout>
 
-            <!-- SERVICES Section -->
+            <!-- SERVICES -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -266,7 +301,6 @@
                 android:layout_marginBottom="12dp"
                 android:layout_marginStart="4dp" />
 
-            <!-- Row 3: PF Passbook & UAN Portal -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
