@@ -331,30 +331,63 @@ public class WorkerActivity extends BaseActivity {
     }
 
     private void insertAdvanceRequest(String amount, String reason) {
-        if (workerName == null) {
+        if (workerName == null || workerName.isEmpty()) {
             Toast.makeText(this, "Worker name not available", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String fatherName = "Unknown";
-
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        com.google.firebase.Timestamp requestTimestamp = com.google.firebase.Timestamp.now();
+        // Fetch FatherName from Worker_Detail collection
+        firestore.collection("Worker_Detail")
+                .whereEqualTo("Name", workerName)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
 
-        Map<String, Object> requestData = new HashMap<>();
-        requestData.put("Name", workerName);
-        requestData.put("FatherName", fatherName);
-        requestData.put("Amount", amount);
-        requestData.put("Reason", reason);
-        requestData.put("RequestTime", requestTimestamp);
-        requestData.put("Status", "Pending");
+                    String fatherName = "Unknown";
 
-        firestore.collection("Requested_Amount")
-                .add(requestData)
-                .addOnSuccessListener(docRef -> Toast.makeText(this, "Request stored in Firestore", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to store in Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    if (!querySnapshot.isEmpty()) {
+                        DocumentSnapshot document = querySnapshot.getDocuments().get(0);
 
-        Toast.makeText(this, "Advance request submitted successfully", Toast.LENGTH_SHORT).show();
+                        String fetchedFatherName = document.getString("FatherName");
+
+                        if (fetchedFatherName != null && !fetchedFatherName.isEmpty()) {
+                            fatherName = fetchedFatherName;
+                        }
+                    }
+
+                    // Current timestamp
+                    com.google.firebase.Timestamp requestTimestamp =
+                            com.google.firebase.Timestamp.now();
+
+                    // Prepare request data
+                    Map<String, Object> requestData = new HashMap<>();
+                    requestData.put("Name", workerName);
+                    requestData.put("FatherName", fatherName);
+                    requestData.put("Amount", amount);
+                    requestData.put("Reason", reason);
+                    requestData.put("RequestTime", requestTimestamp);
+                    requestData.put("Status", "Pending");
+
+                    // Store in Firestore
+                    firestore.collection("Requested_Amount")
+                            .add(requestData)
+                            .addOnSuccessListener(docRef -> {
+                                Toast.makeText(this,
+                                        "Advance request submitted successfully",
+                                        Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(this,
+                                        "Failed to store request: " + e.getMessage(),
+                                        Toast.LENGTH_SHORT).show();
+                            });
+
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this,
+                            "Failed to fetch father name: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
     }
 }
