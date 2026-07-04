@@ -1,5 +1,6 @@
 package com.jitendersingh.friendsengineer;
 
+import com.jitendersingh.friendsengineer.models.WageSlipItem;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -13,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.jitendersingh.friendsengineer.adapters.WageCollectionAdapter;
 
 import java.util.ArrayList;
@@ -29,11 +29,11 @@ public class WageSlipActivity extends BaseActivity {
     private FirebaseFirestore firestore;
 
     private WageCollectionAdapter adapter;
-    private List<String> availableCollections = new ArrayList<>();
+    private List<WageSlipItem> availableCollections = new ArrayList<>();
 
     private String username;
     private String workerId;
-
+    private int pendingOperations = 0;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,7 +85,7 @@ public class WageSlipActivity extends BaseActivity {
                         return;
                     }
 
-                    fetchAllWageCollections();
+                    fetchSalarySlips();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -93,68 +93,111 @@ public class WageSlipActivity extends BaseActivity {
                 });
     }
 
-    private void fetchAllWageCollections() {
-        firestore.collection("wage_collections")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
+    private void fetchSalarySlips() {
 
-                    if (querySnapshot.isEmpty()) {
-                        showEmpty();
+        availableCollections.clear();
+        pendingOperations = 1;
+
+        firestore.collection("salary_data")
+                .get()
+                .addOnSuccessListener(branchSnapshot -> {
+
+                    if (branchSnapshot.isEmpty()) {
+                        pendingOperations--;
+                        checkFinished();
                         return;
                     }
 
-                    List<String> allCollections = new ArrayList<>();
+                    for (DocumentSnapshot branchDoc : branchSnapshot.getDocuments()) {
 
-                    for (QueryDocumentSnapshot doc : querySnapshot) {
-                        String collectionName = doc.getString("name");
-                        if (collectionName != null && !collectionName.trim().isEmpty()) {
-                            allCollections.add(collectionName);
-                        }
+                        String branch = branchDoc.getId();
+
+                        pendingOperations++;
+
+                        firestore.collection("salary_data")
+                                .document(branch)
+                                .collection("salary_months")
+                                .get()
+                                .addOnSuccessListener(monthSnapshot -> {
+
+                                    for (DocumentSnapshot monthDoc : monthSnapshot.getDocuments()) {
+
+                                        String month = monthDoc.getId();
+
+                                        pendingOperations++;
+
+                                        firestore.collection("salary_data")
+                                                .document(branch)
+                                                .collection("salary_months")
+                                                .document(month)
+                                                .collection("employees")
+                                                .document(workerId)
+                                                .get()
+                                                .addOnSuccessListener(employeeDoc -> {
+
+                                                    if (employeeDoc.exists()) {
+
+                                                        availableCollections.add(
+                                                                new WageSlipItem(branch, month)
+                                                        );
+
+                                                    }
+
+                                                    pendingOperations--;
+
+                                                    checkFinished();
+
+                                                })
+                                                .addOnFailureListener(e -> {
+
+                                                    pendingOperations--;
+
+                                                    checkFinished();
+
+                                                });
+
+                                    }
+
+                                    pendingOperations--;
+
+                                    checkFinished();
+
+                                })
+                                .addOnFailureListener(e -> {
+
+                                    pendingOperations--;
+
+                                    checkFinished();
+
+                                });
+
                     }
 
-                    checkWorkerInCollections(allCollections);
+                    pendingOperations--;
+
+                    checkFinished();
+
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    showEmpty();
+
+                    pendingOperations--;
+
+                    checkFinished();
+
                 });
+
     }
 
-    private void checkWorkerInCollections(List<String> allCollections) {
+    private void checkFinished() {
 
-        availableCollections.clear();
+        if (pendingOperations == 0) {
 
-        if (allCollections.isEmpty()) {
-            showEmpty();
-            return;
+            updateUI();
+
         }
 
-        final int total = allCollections.size();
-        final int[] done = {0};
-
-        for (String collectionName : allCollections) {
-            firestore.collection(collectionName)
-                    .document(workerId)
-                    .get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        done[0]++;
-
-                        if (documentSnapshot.exists()) {
-                            availableCollections.add(collectionName);
-                        }
-
-                        if (done[0] == total) {
-                            updateUI();
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        done[0]++;
-                        if (done[0] == total) {
-                            updateUI();
-                        }
-                    });
-        }
     }
+
 
     private void updateUI() {
 
@@ -165,12 +208,49 @@ public class WageSlipActivity extends BaseActivity {
         } else {
             emptyStateLayout.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
+            List<String> displayList = new ArrayList<>();
 
-            adapter = new WageCollectionAdapter(availableCollections, collectionName -> {
-                Intent intent = new Intent(WageSlipActivity.this, WageSlipDetailActivity.class);
-                intent.putExtra("collectionName", collectionName);
-                intent.putExtra("workerId", workerId);
-                startActivity(intent);
+            for(WageSlipItem item : availableCollections){
+
+                displayList.add(
+                        item.getBranch() + " - " + item.getMonth()
+                );
+
+            }
+
+            adapter = new WageCollectionAdapter(displayList, collectionName -> {
+
+                for(WageSlipItem item : availableCollections){
+
+                    String text =
+                            item.getBranch() + " - " + item.getMonth();
+
+                    if(text.equals(collectionName)){
+
+                        Intent intent =
+                                new Intent(
+                                        WageSlipActivity.this,
+                                        WageSlipDetailActivity.class);
+
+                        intent.putExtra(
+                                "branch",
+                                item.getBranch());
+
+                        intent.putExtra(
+                                "month",
+                                item.getMonth());
+
+                        intent.putExtra(
+                                "workerId",
+                                workerId);
+
+                        startActivity(intent);
+
+                        break;
+                    }
+
+                }
+
             });
 
             recyclerView.setAdapter(adapter);

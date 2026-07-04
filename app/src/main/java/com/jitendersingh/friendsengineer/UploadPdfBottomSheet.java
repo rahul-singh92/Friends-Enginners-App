@@ -16,6 +16,10 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.WriteBatch;
+import android.app.ProgressDialog;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,7 +36,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +45,7 @@ public class UploadPdfBottomSheet extends BottomSheetDialogFragment {
 
     private static final String TAG = "UploadPdfBottomSheet";
     private static final int PICK_EXCEL_FILE = 1002;
+    private ProgressDialog progressDialog;
 
     private Spinner spinnerBranch, spinnerYear, spinnerMonth;
     private TextView btnSelectExcel, btnSubmit, cancelButton;
@@ -108,7 +112,7 @@ public class UploadPdfBottomSheet extends BottomSheetDialogFragment {
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 PICK_EXCEL_FILE));
 
-        btnSubmit.setOnClickListener(v -> readExcelAndGeneratePdf());
+        btnSubmit.setOnClickListener(v -> importExcelAndGeneratePdf());
 
         return view;
     }
@@ -155,7 +159,7 @@ public class UploadPdfBottomSheet extends BottomSheetDialogFragment {
     // =========================================================
     // MAIN: Read Excel → Fill SalaryData → Generate PDF
     // =========================================================
-    private void readExcelAndGeneratePdf() {
+    private void importExcelAndGeneratePdf() {
 
         if (selectedExcelUri == null) {
             Toast.makeText(getContext(),
@@ -163,6 +167,12 @@ public class UploadPdfBottomSheet extends BottomSheetDialogFragment {
                     Toast.LENGTH_SHORT).show();
             return;
         }
+
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setTitle("Importing Employees");
+        progressDialog.setMessage("Starting...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
 
         try {
             InputStream inputStream =
@@ -179,7 +189,6 @@ public class UploadPdfBottomSheet extends BottomSheetDialogFragment {
             Log.d(TAG, "Total Rows = " + lastRowNum);
 
             int headerRowIndex = -1;
-            String mon1 = "", mon2 = "", yearText = "";
 
             // ---- Find Header Row ----
             for (int i = 0; i <= lastRowNum; i++) {
@@ -191,20 +200,6 @@ public class UploadPdfBottomSheet extends BottomSheetDialogFragment {
                 if ("SN".equalsIgnoreCase(firstCell.trim())) {
                     headerRowIndex = i;
                     Log.d(TAG, "Header Row = " + i);
-
-                    Row monthRow = sheet.getRow(i - 1);
-                    if (monthRow != null) {
-                        // Month text is at column 30: "21 NOV TO DEC 2024"
-                        String monthText = safeCell(formatter, evaluator, monthRow, 30);
-                        Log.d(TAG, "Month Text = " + monthText);
-
-                        String[] parts = monthText.split(" ");
-                        if (parts.length >= 5) {
-                            mon1 = parts[1].substring(0, 3).toUpperCase();
-                            mon2 = parts[3].substring(0, 3).toUpperCase();
-                            yearText = parts[4];
-                        }
-                    }
                     break;
                 }
             }
@@ -220,158 +215,156 @@ public class UploadPdfBottomSheet extends BottomSheetDialogFragment {
             // ---- Collection Name ----
             String branch = spinnerBranch.getSelectedItem().toString()
                     .trim().replaceAll("\\s+", "_");
-            String collectionName = branch + "_" + mon2 + "_" + yearText;
-            Log.d(TAG, "Collection = " + collectionName);
 
-            // Save collection entry to Firestore
-            Map<String, Object> colData = new HashMap<>();
-            colData.put("name", collectionName);
-            firestore.collection("wage_collections")
-                    .document(collectionName)
-                    .set(colData);
+            String month = spinnerMonth.getSelectedItem()
+                    .toString()
+                    .trim()
+                    .toUpperCase();
 
-            // ---- Read First Employee Row ----
-            // Update this to loop through all rows later
-            Row dataRow = sheet.getRow(headerRowIndex + 1);
+            String year = spinnerYear.getSelectedItem()
+                    .toString()
+                    .trim();
 
-            if (dataRow == null) {
-                Toast.makeText(getContext(),
-                        "No employee data found", Toast.LENGTH_SHORT).show();
-                workbook.close();
-                inputStream.close();
-                return;
+            String monthDocument = month + "_" + year;
+
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("branch", branch);
+            metadata.put("month", month);
+            metadata.put("year", year);
+            metadata.put("uploadedOn", FieldValue.serverTimestamp());
+
+            firestore.collection("salary_data")
+                    .document(branch)
+                    .collection("salary_months")
+                    .document(monthDocument)
+                    .set(metadata);
+
+
+            // ---- Read all Employee Row ----
+            WriteBatch batch = firestore.batch();
+
+            int batchCount = 0;
+            int totalImported = 0;
+            int totalEmployees = 0;
+            for (int rowIndex = headerRowIndex + 1;
+                 rowIndex <= lastRowNum;
+                 rowIndex++) {
+
+                Row row = sheet.getRow(rowIndex);
+
+                if (row == null)
+                    continue;
+
+                String punchingNo =
+                        safeCell(formatter, evaluator, row, 1);
+
+                if (!punchingNo.isEmpty())
+                    totalEmployees++;
             }
+            for(int rowIndex = headerRowIndex + 1; rowIndex <= lastRowNum; rowIndex++)
+            {
+                Row dataRow = sheet.getRow(rowIndex);
 
-            // =========================================
-            // MAP EXCEL COLUMNS → SalaryData
-            // Adjust column indexes to match your Excel
-            // =========================================
-            SalarySlipPdfGenerator.SalaryData sd =
-                    new SalarySlipPdfGenerator.SalaryData();
+                if(dataRow == null)
+                    continue;
 
-            sd.mon1 = mon1;
-            sd.mon2 = mon2;
-            sd.year = yearText;
+                String punchingNo =
+                        safeCell(formatter, evaluator, dataRow, 1);
 
-            // Employee info — adjust col indexes to match your Excel headers
-            sd.name        = safeCell(formatter, evaluator, dataRow, 3);
-            sd.fatherName  = safeCell(formatter, evaluator, dataRow, 4);
-//            sd.punchingNo  = safeCell(formatter, evaluator, dataRow, 1);
-            sd.punchingNo = "105998";
-            // TODO: fill in the rest once you confirm column indexes
-            // sd.designation = safeCell(formatter, evaluator, dataRow, 5);
-            // sd.department  = safeCell(formatter, evaluator, dataRow, 6);
-            // sd.doj         = safeCell(formatter, evaluator, dataRow, 7);
-            // sd.pfNo        = safeCell(formatter, evaluator, dataRow, 8);
-            // sd.esiNo       = safeCell(formatter, evaluator, dataRow, 9);
-            // sd.uanNo       = safeCell(formatter, evaluator, dataRow, 10);
-            // sd.tpd         = safeCell(formatter, evaluator, dataRow, 11);
-            // sd.nodw        = safeCell(formatter, evaluator, dataRow, 12);
-            // sd.wO          = safeCell(formatter, evaluator, dataRow, 13);
-            // sd.holiday     = safeCell(formatter, evaluator, dataRow, 14);
-            // sd.otH         = safeCell(formatter, evaluator, dataRow, 15);
-            // sd.basic       = safeCell(formatter, evaluator, dataRow, 16);
-            // sd.hra         = safeCell(formatter, evaluator, dataRow, 17);
-            // sd.convenience = safeCell(formatter, evaluator, dataRow, 18);
-            // sd.cl          = safeCell(formatter, evaluator, dataRow, 19);
-            // sd.pl          = safeCell(formatter, evaluator, dataRow, 20);
-            // sd.bonus       = safeCell(formatter, evaluator, dataRow, 21);
-            // sd.gross       = safeCell(formatter, evaluator, dataRow, 22);
-            // sd.basicE      = safeCell(formatter, evaluator, dataRow, 23);
-            // sd.hraE        = safeCell(formatter, evaluator, dataRow, 24);
-            // sd.convenieceE = safeCell(formatter, evaluator, dataRow, 25);
-            // sd.otE         = safeCell(formatter, evaluator, dataRow, 26);
-            // sd.clE         = safeCell(formatter, evaluator, dataRow, 27);
-            // sd.plE         = safeCell(formatter, evaluator, dataRow, 28);
-            // sd.bonusE      = safeCell(formatter, evaluator, dataRow, 29);
-            // sd.totalEarning= safeCell(formatter, evaluator, dataRow, 30);
-            // sd.pfD         = safeCell(formatter, evaluator, dataRow, 31);
-            // sd.esiD        = safeCell(formatter, evaluator, dataRow, 32);
-            // sd.oteD        = safeCell(formatter, evaluator, dataRow, 33);
-            // sd.advanceD    = safeCell(formatter, evaluator, dataRow, 34);
-            // sd.tea         = safeCell(formatter, evaluator, dataRow, 35);
-            // sd.canteen     = safeCell(formatter, evaluator, dataRow, 36);
-            // sd.totalDeduction = safeCell(formatter, evaluator, dataRow, 37);
-            // sd.netSalary   = safeCell(formatter, evaluator, dataRow, 38);
-            // sd.netSalaryWords = safeCell(formatter, evaluator, dataRow, 39);
-            // sd.bankName    = safeCell(formatter, evaluator, dataRow, 40);
-            // sd.accountNo   = safeCell(formatter, evaluator, dataRow, 41);
-            sd.designation = "OPERATOR";
-            sd.department  = "PRODUCTION";
-            sd.doj         = "01-01-2020";
-            sd.pfNo        = "PF123456";
-            sd.esiNo       = "ESI789012";
-            sd.uanNo       = "UAN345678";
-            sd.tpd         = "26";
-            sd.nodw        = "24";
-            sd.wO          = "4";
-            sd.holiday     = "1";
-            sd.otH         = "10";
-            sd.basic       = "8000";
-            sd.hra         = "2000";
-            sd.convenience = "1000";
-            sd.cl          = "500";
-            sd.pl          = "500";
-            sd.bonus       = "700";
-            sd.gross       = "12700";
-            sd.basicE      = "7384";
-            sd.hraE        = "1846";
-            sd.convenieceE = "923";
-            sd.otE         = "500";
-            sd.clE         = "0";
-            sd.plE         = "0";
-            sd.bonusE      = "646";
-            sd.totalEarning = "11299";
-            sd.pfD         = "1056";
-            sd.esiD        = "95";
-            sd.oteD        = "4";
-            sd.advanceD    = "0";
-            sd.tea         = "50";
-            sd.canteen     = "100";
-            sd.totalDeduction = "1305";
-            sd.netSalary   = "9994";
-            sd.netSalaryWords = "NINE THOUSAND NINE HUNDRED NINETY FOUR ONLY";
-            sd.bankName    = "SBI BHIWADI";
-            sd.accountNo   = "XXXX1234";
+                if (punchingNo.isEmpty())
+                    continue;
+
+                Map<String, Object> employee = new HashMap<>();
+
+                employee.put("sn", safeCell(formatter, evaluator, dataRow, 0));
+                employee.put("punchingNo", safeCell(formatter, evaluator, dataRow, 1));
+                employee.put("department", safeCell(formatter, evaluator, dataRow, 2));
+                employee.put("name", safeCell(formatter, evaluator, dataRow, 3));
+                employee.put("fatherName", safeCell(formatter, evaluator, dataRow, 4));
+                employee.put("doj", safeCell(formatter, evaluator, dataRow, 5));
+                employee.put("designation", safeCell(formatter, evaluator, dataRow, 6));
+                employee.put("pfNo", safeCell(formatter, evaluator, dataRow, 7));
+                employee.put("esiNo", safeCell(formatter, evaluator, dataRow, 8));
+                employee.put("uanNo", safeCell(formatter, evaluator, dataRow, 9));
+
+                employee.put("basic", safeCell(formatter, evaluator, dataRow, 10));
+                employee.put("hra", safeCell(formatter, evaluator, dataRow, 11));
+                employee.put("conveyance", safeCell(formatter, evaluator, dataRow, 12));
+                employee.put("specialAllowance", safeCell(formatter, evaluator, dataRow, 13));
+                employee.put("cl", safeCell(formatter, evaluator, dataRow, 14));
+                employee.put("pl", safeCell(formatter, evaluator, dataRow, 15));
+                employee.put("bonus", safeCell(formatter, evaluator, dataRow, 16));
+                employee.put("grossRate", safeCell(formatter, evaluator, dataRow, 17));
+                employee.put("daysInMonth", safeCell(formatter, evaluator, dataRow, 18));
+                employee.put("workingDays", safeCell(formatter, evaluator, dataRow, 19));
+                employee.put("wo", safeCell(formatter, evaluator, dataRow, 20));
+                employee.put("holiday", safeCell(formatter, evaluator, dataRow, 21));
+                employee.put("totalDays", safeCell(formatter, evaluator, dataRow, 22));
+                employee.put("otHours", safeCell(formatter, evaluator, dataRow, 23));
+
+                employee.put("basicEarned", safeCell(formatter, evaluator, dataRow, 24));
+                employee.put("hraEarned", safeCell(formatter, evaluator, dataRow, 25));
+                employee.put("conveyanceEarned", safeCell(formatter, evaluator, dataRow, 26));
+                employee.put("specialAllowanceEarned", safeCell(formatter, evaluator, dataRow, 27));
+                employee.put("clEarned", safeCell(formatter, evaluator, dataRow, 28));
+                employee.put("plEarned", safeCell(formatter, evaluator, dataRow, 29));
+                employee.put("bonusEarned", safeCell(formatter, evaluator, dataRow, 30));
+                employee.put("otEarned", safeCell(formatter, evaluator, dataRow, 31));
+                employee.put("totalEarning", safeCell(formatter, evaluator, dataRow, 32));
+
+                employee.put("pfDeduction", safeCell(formatter, evaluator, dataRow, 33));
+                employee.put("esiDeduction", safeCell(formatter, evaluator, dataRow, 34));
+                employee.put("otDeduction", safeCell(formatter, evaluator, dataRow, 35));
+                employee.put("advanceDeduction", safeCell(formatter, evaluator, dataRow, 36));
+                employee.put("canteen", safeCell(formatter, evaluator, dataRow, 37));
+                employee.put("tea", safeCell(formatter, evaluator, dataRow, 38));
+                employee.put("totalDeduction", safeCell(formatter, evaluator, dataRow, 39));
+                employee.put("netSalary", safeCell(formatter, evaluator, dataRow, 40));
+                employee.put("netSalaryWords", safeCell(formatter, evaluator, dataRow, 41));
+                DocumentReference employeeRef =
+                        firestore.collection("salary_data")
+                                .document(branch)
+                                .collection("salary_months")
+                                .document(monthDocument)
+                                .collection("employees")
+                                .document(punchingNo);
+
+                batch.set(employeeRef, employee);
+                batchCount++;
+                totalImported++;
+
+                progressDialog.setMessage(
+                        "Imported " +
+                                totalImported +
+                                " / " +
+                                totalEmployees +
+                                " employees..."
+                );
+            }
+            batch.commit()
+                    .addOnSuccessListener(unused -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(
+                                getContext(),
+                                "Employees Imported Successfully",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        dismiss();
+
+                    })
+                    .addOnFailureListener(e -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(
+                                getContext(),
+                                "Upload Failed : " + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                    });
 
             workbook.close();
             inputStream.close();
-
-            // ---- Generate PDF ----
-            File outputFile = new File(
-                    android.os.Environment.getExternalStoragePublicDirectory(
-                            android.os.Environment.DIRECTORY_DOWNLOADS),
-                    sd.punchingNo + "_salary.pdf");
-
-            SalarySlipPdfGenerator generator =
-                    new SalarySlipPdfGenerator(requireContext());
-            generator.generate(outputFile, sd);
-
-            Log.d(TAG, "PDF saved: " + outputFile.getAbsolutePath());
-
-            // ---- Save to Firestore ----
-            Map<String, Object> empData = new HashMap<>();
-            empData.put("sn",        safeCell(formatter, evaluator, dataRow, 0));
-            empData.put("punchingNo", sd.punchingNo);
-            empData.put("name",       sd.name);
-            empData.put("fatherName", sd.fatherName);
-            empData.put("pdfPath",    outputFile.getAbsolutePath());
-            empData.put("mon1",       mon1);
-            empData.put("mon2",       mon2);
-            empData.put("year",       yearText);
-
-            firestore.collection(collectionName)
-                    .document(sd.punchingNo)
-                    .set(empData)
-                    .addOnSuccessListener(unused -> {
-                        Log.d(TAG, "Firestore saved");
-                        Toast.makeText(getContext(),
-                                "PDF Generated: " + outputFile.getName(),
-                                Toast.LENGTH_LONG).show();
-                    })
-                    .addOnFailureListener(e ->
-                            Log.e(TAG, "Firestore save failed", e));
-
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(getContext(),
