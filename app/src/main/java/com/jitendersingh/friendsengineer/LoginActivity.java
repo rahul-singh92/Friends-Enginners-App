@@ -27,10 +27,10 @@ import androidx.core.content.ContextCompat;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import android.view.WindowInsetsController;
+import android.view.Window;
 
 public class LoginActivity extends Activity {
-    private static final int STORAGE_PERMISSION_CODE = 2001;
-
     EditText usernameField, passwordField;
     Button loginBtn;
     CardView loginCard;
@@ -40,6 +40,23 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        Window window = getWindow();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowInsetsController controller = window.getInsetsController();
+            if (controller != null) {
+                controller.setSystemBarsAppearance(
+                        0, // 0 = light icons (i.e. NOT light status bar)
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                );
+            }
+        } else {
+            // For API 23–29
+            View decorView = window.getDecorView();
+            int flags = decorView.getSystemUiVisibility();
+            flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR; // clear the "light status bar" flag
+            decorView.setSystemUiVisibility(flags);
+        }
 
         // Initialize views
         usernameField = findViewById(R.id.username);
@@ -62,10 +79,7 @@ public class LoginActivity extends Activity {
 
         if (!policyAccepted) {
             showPrivacyPolicyDialog();
-        } else {
-            requestStoragePermissionIfNeeded();
         }
-
         loginBtn.setOnClickListener(view -> {
             // Hide error text
             errorText.setVisibility(View.GONE);
@@ -264,43 +278,10 @@ public class LoginActivity extends Activity {
                 SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
                 prefs.edit().putBoolean("privacy_policy_accepted", true).apply();
                 dialog.dismiss();
-                requestStoragePermissionIfNeeded();
             }
         });
 
         dialog.show();
-    }
-
-    private void requestStoragePermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{
-                                Manifest.permission.READ_MEDIA_IMAGES,
-                                Manifest.permission.READ_MEDIA_VIDEO,
-                                Manifest.permission.READ_MEDIA_AUDIO
-                        },
-                        STORAGE_PERMISSION_CODE);
-            }
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
-                        STORAGE_PERMISSION_CODE);
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == STORAGE_PERMISSION_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Storage permission granted", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Storage permission denied", Toast.LENGTH_LONG).show();
-            }
-        }
     }
 
     private void checkWorkerCredentials(FirebaseFirestore db, String username, String password) {
