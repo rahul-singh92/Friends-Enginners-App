@@ -170,52 +170,52 @@ public class WageSlipDetailActivity extends BaseActivity {
 
             if (parts.length == 2) {
                 data.mon1 = parts[0];
-                data.mon2 = parts[0];
+                data.mon2 = getNextMonthName(parts[0]);
                 data.year = parts[1];
             }
 
-            data.name = salaryDocument.getString("name");
-            data.fatherName = salaryDocument.getString("fatherName");
-            data.designation = salaryDocument.getString("designation");
-            data.department = salaryDocument.getString("department");
-            data.doj = salaryDocument.getString("doj");
+            data.name = safe(salaryDocument.getString("name"));
+            data.fatherName = safe(salaryDocument.getString("fatherName"));
+            data.designation = safe(salaryDocument.getString("designation"));
+            data.department = safe(salaryDocument.getString("department"));
+            data.doj = safe(salaryDocument.getString("doj"));
 
-            data.punchingNo = salaryDocument.getString("punchingNo");
-            data.pfNo = salaryDocument.getString("pfNo");
-            data.esiNo = salaryDocument.getString("esiNo");
-            data.uanNo = salaryDocument.getString("uanNo");
-            data.tpd = salaryDocument.getString("tpd");
-            data.nodw = salaryDocument.getString("nodw");
-            data.wO = salaryDocument.getString("wo");
-            data.holiday = salaryDocument.getString("holiday");
-            data.otH = salaryDocument.getString("otHours");
-            data.basic = salaryDocument.getString("basic");
-            data.hra = salaryDocument.getString("hra");
-            data.convenience = salaryDocument.getString("conveyance");
-            data.cl = salaryDocument.getString("cl");
-            data.pl = salaryDocument.getString("pl");
-            data.bonus = salaryDocument.getString("bonus");
-            data.gross = salaryDocument.getString("gross");
-            data.basicE = salaryDocument.getString("basicEarned");
-            data.hraE = salaryDocument.getString("hraEarned");
-            data.convenieceE = salaryDocument.getString("conveyanceEarned");
-            data.otE = salaryDocument.getString("otEarned");
-            data.clE = salaryDocument.getString("clEarned");
-            data.plE = salaryDocument.getString("plEarned");
-            data.bonusE = salaryDocument.getString("bonusEarned");
-            data.totalEarning = salaryDocument.getString("totalEarning");
-            data.pfD = salaryDocument.getString("pfDeduction");
-            data.esiD = salaryDocument.getString("esiDeduction");
-            data.oteD = salaryDocument.getString("otDeduction");
-            data.advanceD = salaryDocument.getString("advanceDeduction");
-            data.tea = salaryDocument.getString("tea");
-            data.canteen = salaryDocument.getString("canteen");
-            data.totalDeduction = salaryDocument.getString("totalDeduction");
-            data.netSalary = salaryDocument.getString("netSalary");
-            data.netSalaryWords = salaryDocument.getString("netSalaryWords");
+            data.punchingNo = safe(salaryDocument.getString("punchingNo"));
+            data.pfNo = safe(salaryDocument.getString("pfNo"));
+            data.esiNo = safe(salaryDocument.getString("esiNo"));
+            data.uanNo = safe(salaryDocument.getString("uanNo"));
+            data.tpd = safe(salaryDocument.getString("totalDays"));
+            data.nodw = safe(salaryDocument.getString("workingDays"));
+            data.wO = safe(salaryDocument.getString("wo"));
+            data.holiday = safe(salaryDocument.getString("holiday"));
+            data.otH = safe(salaryDocument.getString("otHours"));
+            data.basic = safe(salaryDocument.getString("basic"));
+            data.hra = safe(salaryDocument.getString("hra"));
+            data.convenience = safe(salaryDocument.getString("conveyance"));
+            data.cl = safe(salaryDocument.getString("cl"));
+            data.pl = safe(salaryDocument.getString("pl"));
+            data.bonus = safe(salaryDocument.getString("bonus"));
+            data.gross = safe(salaryDocument.getString("grossRate"));
+            data.basicE = safe(salaryDocument.getString("basicEarned"));
+            data.hraE = safe(salaryDocument.getString("hraEarned"));
+            data.convenieceE = safe(salaryDocument.getString("conveyanceEarned"));
+            data.otE = safe(salaryDocument.getString("otEarned"));
+            data.clE = safe(salaryDocument.getString("clEarned"));
+            data.plE = safe(salaryDocument.getString("plEarned"));
+            data.bonusE = safe(salaryDocument.getString("bonusEarned"));
+            data.totalEarning = safe(salaryDocument.getString("totalEarning"));
+            data.pfD = safe(salaryDocument.getString("pfDeduction"));
+            data.esiD = safe(salaryDocument.getString("esiDeduction"));
+            data.oteD = safe(salaryDocument.getString("otDeduction"));
+            data.advanceD = safe(salaryDocument.getString("advanceDeduction"));
+            data.tea = safe(salaryDocument.getString("tea"));
+            data.canteen = safe(salaryDocument.getString("canteen"));
+            data.totalDeduction = safe(salaryDocument.getString("totalDeduction"));
+            data.netSalary = safe(salaryDocument.getString("netSalary"));
+            data.netSalaryWords = safe(salaryDocument.getString("netSalaryWords"));
 
-            data.bankName = salaryDocument.getString("bankName");
-            data.accountNo = salaryDocument.getString("accountNo");
+            data.bankName = safe(salaryDocument.getString("bankName"));
+            data.accountNo = safe(salaryDocument.getString("accountNo"));
 
             generatedPdfFile = new File(
                     getCacheDir(),
@@ -230,11 +230,50 @@ public class WageSlipDetailActivity extends BaseActivity {
             return true;
 
         } catch (Exception e) {
-            Toast.makeText(this,
-                    e.getMessage(),
-                    Toast.LENGTH_LONG).show();
+            android.util.Log.e("WageSlipDetail", "generateSalarySlip failed", e);
+            String msg = e.getMessage();
+            if (msg == null || msg.trim().isEmpty()) {
+                msg = e.getClass().getSimpleName() + " while generating PDF";
+            }
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
             return false;
         }
+    }
+
+    /** Converts a null Firestore field into an empty string so the PDF
+     * generator (and iText's Paragraph/Text) never receives null. */
+    private String safe(String value) {
+        return value != null ? value : "";
+    }
+
+    private static final String[] MONTHS = {
+            "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+            "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+    };
+
+    /**
+     * Returns the month that comes right after the given month name.
+     * Wraps DECEMBER -> JANUARY. Matches on full name first; if that
+     * fails, falls back to matching a 3-letter abbreviation (JAN, FEB...)
+     * so it works whether your spinner uses short or full month names.
+     */
+    private String getNextMonthName(String currentMonth) {
+        if (currentMonth == null) return "";
+        String cm = currentMonth.trim().toUpperCase();
+
+        for (int i = 0; i < MONTHS.length; i++) {
+            if (MONTHS[i].equals(cm)) {
+                return MONTHS[(i + 1) % 12];
+            }
+        }
+        // Fallback: match by 3-letter abbreviation (e.g. "MAY", "JUN")
+        for (int i = 0; i < MONTHS.length; i++) {
+            if (MONTHS[i].startsWith(cm) || cm.startsWith(MONTHS[i].substring(0, 3))) {
+                return MONTHS[(i + 1) % 12];
+            }
+        }
+        // Unrecognized month name — return as-is rather than crash.
+        return cm;
     }
 
     private Uri getPdfUri() {
@@ -246,28 +285,38 @@ public class WageSlipDetailActivity extends BaseActivity {
     }
 
     private void openPdf() {
-        Uri pdfUri = getPdfUri();
+        try {
+            Uri pdfUri = getPdfUri();
 
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(pdfUri, "application/pdf");
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(pdfUri, "application/pdf");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(Intent.createChooser(intent, "Open Salary Slip"));
-        } else {
-            Toast.makeText(this, "No PDF Viewer installed", Toast.LENGTH_LONG).show();
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(Intent.createChooser(intent, "Open Salary Slip"));
+            } else {
+                Toast.makeText(this, "No PDF Viewer installed", Toast.LENGTH_LONG).show();
+            }
+        } catch (Exception e) {
+            android.util.Log.e("WageSlipDetail", "openPdf failed", e);
+            Toast.makeText(this, "Open failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
     private void sharePdf() {
-        Uri pdfUri = getPdfUri();
+        try {
+            Uri pdfUri = getPdfUri();
 
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType("application/pdf");
-        shareIntent.putExtra(Intent.EXTRA_STREAM, pdfUri);
-        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("application/pdf");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, pdfUri);
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-        startActivity(Intent.createChooser(shareIntent, "Share Salary Slip"));
+            startActivity(Intent.createChooser(shareIntent, "Share Salary Slip"));
+        } catch (Exception e) {
+            android.util.Log.e("WageSlipDetail", "sharePdf failed", e);
+            Toast.makeText(this, "Share failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
     /**
@@ -330,7 +379,8 @@ public class WageSlipDetailActivity extends BaseActivity {
                 Toast.makeText(this, "Saved to Downloads", Toast.LENGTH_SHORT).show();
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            android.util.Log.e("WageSlipDetail", "downloadPdf failed", e);
             Toast.makeText(this, "Download failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }

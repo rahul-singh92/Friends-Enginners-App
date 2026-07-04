@@ -32,8 +32,21 @@ public class WageSlipActivity extends BaseActivity {
     private List<WageSlipItem> availableCollections = new ArrayList<>();
 
     private String username;
-    private String workerId;
+
+    // Real employee identity used to match salary_data records.
+    // NOTE: credentials_worker's "id" field (1, 2, 3...) has NO relation
+    // to the punchingNo used as the employee document ID in salary_data.
+    // We match by name + fatherName instead (normalized: trimmed + lowercased).
+    private String workerNameSearch;
+    private String workerFatherNameSearch;
+
+    // Display versions (as typed in credentials_worker), used for showing
+    // the worker's real name/father name if needed elsewhere.
+    private String workerDisplayName;
+    private String workerDisplayFatherName;
+
     private int pendingOperations = 0;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,10 +71,15 @@ public class WageSlipActivity extends BaseActivity {
 
         username = getIntent().getStringExtra("username");
 
-        fetchWorkerId();
+        fetchWorkerIdentity();
     }
 
-    private void fetchWorkerId() {
+    /**
+     * Looks up the logged-in worker's name + fatherName from
+     * credentials_worker. These are what we match against in
+     * salary_data, NOT the sequential "id" field.
+     */
+    private void fetchWorkerIdentity() {
         firestore.collection("credentials_worker")
                 .whereEqualTo("Username", username)
                 .get()
@@ -74,16 +92,20 @@ public class WageSlipActivity extends BaseActivity {
 
                     DocumentSnapshot doc = querySnapshot.getDocuments().get(0);
 
-                    Object idObj = doc.get("id");
-                    if (idObj != null) {
-                        workerId = String.valueOf(idObj);
-                    }
+                    workerDisplayName = doc.getString("Name");
+                    workerDisplayFatherName = doc.getString("FATHER_S_NAME");
 
-                    if (workerId == null || workerId.trim().isEmpty()) {
-                        Toast.makeText(this, "Worker ID not found in database", Toast.LENGTH_LONG).show();
+                    if (workerDisplayName == null || workerDisplayName.trim().isEmpty()
+                            || workerDisplayFatherName == null || workerDisplayFatherName.trim().isEmpty()) {
+                        Toast.makeText(this,
+                                "Name / Father Name not set for this worker in database",
+                                Toast.LENGTH_LONG).show();
                         showEmpty();
                         return;
                     }
+
+                    workerNameSearch = workerDisplayName.trim().toLowerCase();
+                    workerFatherNameSearch = workerDisplayFatherName.trim().toLowerCase();
 
                     fetchSalarySlips();
                 })
@@ -126,78 +148,70 @@ public class WageSlipActivity extends BaseActivity {
 
                                         pendingOperations++;
 
+                                        // Match by normalized name + fatherName
+                                        // instead of a direct document ID lookup.
                                         firestore.collection("salary_data")
                                                 .document(branch)
                                                 .collection("salary_months")
                                                 .document(month)
                                                 .collection("employees")
-                                                .document(workerId)
+                                                .whereEqualTo("nameSearch", workerNameSearch)
+                                                .whereEqualTo("fatherNameSearch", workerFatherNameSearch)
                                                 .get()
-                                                .addOnSuccessListener(employeeDoc -> {
+                                                .addOnSuccessListener(employeeQuery -> {
 
-                                                    if (employeeDoc.exists()) {
+                                                    if (!employeeQuery.isEmpty()) {
+
+                                                        // Use the first match. If there are
+                                                        // multiple employees with the exact
+                                                        // same name + father name in the same
+                                                        // month, this picks one arbitrarily —
+                                                        // worth adding a tie-breaker (e.g. DOB)
+                                                        // if that scenario is possible for you.
+                                                        DocumentSnapshot employeeDoc =
+                                                                employeeQuery.getDocuments().get(0);
+
+                                                        String realWorkerId = employeeDoc.getId();
 
                                                         availableCollections.add(
-                                                                new WageSlipItem(branch, month)
+                                                                new WageSlipItem(branch, month, realWorkerId)
                                                         );
-
                                                     }
 
                                                     pendingOperations--;
-
                                                     checkFinished();
-
                                                 })
                                                 .addOnFailureListener(e -> {
-
                                                     pendingOperations--;
-
                                                     checkFinished();
-
                                                 });
-
                                     }
 
                                     pendingOperations--;
-
                                     checkFinished();
 
                                 })
                                 .addOnFailureListener(e -> {
-
                                     pendingOperations--;
-
                                     checkFinished();
-
                                 });
-
                     }
 
                     pendingOperations--;
-
                     checkFinished();
 
                 })
                 .addOnFailureListener(e -> {
-
                     pendingOperations--;
-
                     checkFinished();
-
                 });
-
     }
 
     private void checkFinished() {
-
         if (pendingOperations == 0) {
-
             updateUI();
-
         }
-
     }
-
 
     private void updateUI() {
 
@@ -210,47 +224,34 @@ public class WageSlipActivity extends BaseActivity {
             recyclerView.setVisibility(View.VISIBLE);
             List<String> displayList = new ArrayList<>();
 
-            for(WageSlipItem item : availableCollections){
-
-                displayList.add(
-                        item.getBranch() + " - " + item.getMonth()
-                );
-
+            for (WageSlipItem item : availableCollections) {
+                displayList.add(item.getBranch() + " - " + item.getMonth());
             }
 
             adapter = new WageCollectionAdapter(displayList, collectionName -> {
 
-                for(WageSlipItem item : availableCollections){
+                for (WageSlipItem item : availableCollections) {
 
-                    String text =
-                            item.getBranch() + " - " + item.getMonth();
+                    String text = item.getBranch() + " - " + item.getMonth();
 
-                    if(text.equals(collectionName)){
+                    if (text.equals(collectionName)) {
 
-                        Intent intent =
-                                new Intent(
-                                        WageSlipActivity.this,
-                                        WageSlipDetailActivity.class);
+                        Intent intent = new Intent(
+                                WageSlipActivity.this,
+                                WageSlipDetailActivity.class);
 
-                        intent.putExtra(
-                                "branch",
-                                item.getBranch());
+                        intent.putExtra("branch", item.getBranch());
+                        intent.putExtra("month", item.getMonth());
 
-                        intent.putExtra(
-                                "month",
-                                item.getMonth());
-
-                        intent.putExtra(
-                                "workerId",
-                                workerId);
+                        // Pass the REAL employee document ID (punchingNo),
+                        // resolved via name+fatherName match above — not
+                        // the credentials_worker sequential id.
+                        intent.putExtra("workerId", item.getWorkerId());
 
                         startActivity(intent);
-
                         break;
                     }
-
                 }
-
             });
 
             recyclerView.setAdapter(adapter);
