@@ -75,6 +75,8 @@
         <activity android:name=".WorkerScheduleActivity" />
         <activity android:name=".PdfWebViewActivity"
             android:label="View Wage Slip"/>
+        <activity android:name=".AdminMonthActivity" />
+        <activity android:name=".AdminEmployeeListActivity" />
 
         <!-- FileProvider for sharing files -->
         <provider

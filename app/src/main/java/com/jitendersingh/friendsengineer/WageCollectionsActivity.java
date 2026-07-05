@@ -59,15 +59,13 @@ public class WageCollectionsActivity extends BaseActivity {
     }
 
     private void loadWageCollections() {
-        firestore.collection("wage_collections")
+        firestore.collection("salary_data")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     wageCollections.clear();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        String name = doc.getString("name");
-                        if (name != null) {
-                            wageCollections.add(name);
-                        }
+                        String department = doc.getId();
+                        wageCollections.add(department);
                     }
 
                     // Show/hide empty state
@@ -90,8 +88,8 @@ public class WageCollectionsActivity extends BaseActivity {
     }
 
     private void onCollectionClicked(String collectionName) {
-        Intent intent = new Intent(this, WagePersonListActivity.class);
-        intent.putExtra("collectionName", collectionName);
+        Intent intent = new Intent(this, AdminMonthActivity.class);
+        intent.putExtra("department", collectionName);
         startActivity(intent);
     }
 }
