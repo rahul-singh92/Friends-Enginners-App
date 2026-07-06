@@ -102,7 +102,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Upload Excel"
+                            android:text="Upload Attendence/Overtime Sheet"
                             android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:fontFamily="sans-serif-medium"
@@ -141,7 +141,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Upload PDF"
+                            android:text="Upload Wage Slip"
                             android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:fontFamily="sans-serif-medium"
@@ -289,7 +289,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="View Details"
+                            android:text="View Atndc/OT sheet"
                             android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:fontFamily="sans-serif-medium"
@@ -376,7 +376,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="View PDFs"
+                            android:text="View Wage Slip"
                             android:textColor="#FFFFFF"
                             android:textSize="13sp"
                             android:fontFamily="sans-serif-medium"

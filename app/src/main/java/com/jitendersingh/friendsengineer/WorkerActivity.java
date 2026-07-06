@@ -69,14 +69,61 @@ public class WorkerActivity extends BaseActivity {
 
 
     private void showUserOptionsDialog() {
+        String[] options = {"Change Password", "Log Out"};
+
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<String>(
+                this, android.R.layout.simple_list_item_1, options) {
+            @Override
+            public View getView(int position, View convertView, android.view.ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                android.widget.TextView textView = view.findViewById(android.R.id.text1);
+                textView.setTextColor(position == 1
+                        ? android.graphics.Color.parseColor("#FF5252")
+                        : android.graphics.Color.WHITE);
+                textView.setPadding(32, 24, 32, 24);
+                view.setBackgroundColor(android.graphics.Color.parseColor("#2A2A2A"));
+                return view;
+            }
+        };
+
         new AlertDialog.Builder(this, R.style.DarkAlertDialog)
                 .setTitle("User Options")
-                .setItems(new String[]{"Change Password"}, (dialog, which) -> {
+                .setAdapter(adapter, (dialog, which) -> {
                     if (which == 0) {
                         showChangePasswordDialog();
+                    } else if (which == 1) {
+                        confirmLogout();
                     }
                 })
                 .show();
+    }
+
+    private void confirmLogout() {
+        new AlertDialog.Builder(this, R.style.DarkAlertDialog)
+                .setTitle("Log Out")
+                .setMessage("Are you sure you want to log out?")
+                .setPositiveButton("Log Out", (dialog, which) -> performLogout())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /**
+     * Clears the saved session (username, role, login timestamp) so the
+     * next app launch requires entering username/password again, then
+     * sends the user back to LoginActivity with the back stack cleared.
+     */
+    private void performLogout() {
+        getSharedPreferences("UserPrefs", MODE_PRIVATE)
+                .edit()
+                .remove("logged_in_username")
+                .remove("isAdmin")
+                .remove("login_timestamp")
+                .apply();
+
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void showChangePasswordDialog() {

@@ -31,6 +31,10 @@ import android.view.WindowInsetsController;
 import android.view.Window;
 
 public class LoginActivity extends Activity {
+
+    // Auto-login session length: 30 days in milliseconds.
+    private static final long SESSION_VALIDITY_MS = 30L * 24 * 60 * 60 * 1000;
+
     EditText usernameField, passwordField;
     Button loginBtn;
     CardView loginCard;
@@ -39,6 +43,13 @@ public class LoginActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // If there's a still-valid saved session, skip the login screen
+        // entirely and go straight to Admin/Worker.
+        if (tryAutoLogin()) {
+            return;
+        }
+
         setContentView(R.layout.activity_login);
 
         Window window = getWindow();
@@ -112,10 +123,14 @@ public class LoginActivity extends Activity {
 
             FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-            // Check in credentials_admin first
+            // Check in credentials_admin first.
+            // Source.SERVER forces a live network check — without this,
+            // Firestore's offline cache can validate a login using
+            // previously-cached credentials even with no internet connection,
+            // which is a security gap for a login screen specifically.
             db.collection("credentials_admin")
                     .whereEqualTo("Username", username)
-                    .get()
+                    .get(com.google.firebase.firestore.Source.SERVER)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful() && !task.getResult().isEmpty()) {
                             boolean valid = false;
@@ -132,6 +147,7 @@ public class LoginActivity extends Activity {
                                         .edit()
                                         .putBoolean("isAdmin", true)
                                         .putString("logged_in_username", username)
+                                        .putLong("login_timestamp", System.currentTimeMillis())
                                         .apply();
 
                                 // Success animation
@@ -150,16 +166,60 @@ public class LoginActivity extends Activity {
                                 resetLoginButton();
                                 showErrorWithAnimation("Wrong username or password");
                             }
-                        } else {
-                            // Not found in admin, check in worker
+                        } else if (task.isSuccessful()) {
+                            // Admin query succeeded but found no matching username — check worker instead.
                             checkWorkerCredentials(db, username, password);
                         }
+                        // If task.isSuccessful() is false (e.g. offline / network error),
+                        // do nothing here — the addOnFailureListener below handles it
+                        // with a proper "Connection error" message instead of
+                        // incorrectly falling through to a worker-credential check
+                        // that would just fail the same way.
                     })
                     .addOnFailureListener(e -> {
                         resetLoginButton();
                         showErrorWithAnimation("Connection error. Please try again.");
                     });
         });
+    }
+
+    /**
+     * Checks for a saved session (username + role + login timestamp) that's
+     * still within the 30-day validity window. If found, navigates straight
+     * to AdminActivity/WorkerActivity and returns true (caller should skip
+     * the rest of onCreate). Returns false if no valid session exists,
+     * meaning the normal login screen should be shown.
+     */
+    private boolean tryAutoLogin() {
+        SharedPreferences userPrefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+
+        String savedUsername = userPrefs.getString("logged_in_username", null);
+        long loginTimestamp = userPrefs.getLong("login_timestamp", 0L);
+
+        if (savedUsername == null || loginTimestamp == 0L) {
+            return false; // never logged in / already logged out
+        }
+
+        long elapsed = System.currentTimeMillis() - loginTimestamp;
+        if (elapsed > SESSION_VALIDITY_MS) {
+            // Session expired — clear it so the user must log in again.
+            userPrefs.edit()
+                    .remove("logged_in_username")
+                    .remove("isAdmin")
+                    .remove("login_timestamp")
+                    .apply();
+            return false;
+        }
+
+        boolean isAdmin = userPrefs.getBoolean("isAdmin", false);
+
+        Intent intent = new Intent(this, isAdmin ? AdminActivity.class : WorkerActivity.class);
+        if (!isAdmin) {
+            intent.putExtra("username", savedUsername);
+        }
+        startActivity(intent);
+        finish();
+        return true;
     }
 
     private void startAnimations() {
@@ -287,7 +347,7 @@ public class LoginActivity extends Activity {
     private void checkWorkerCredentials(FirebaseFirestore db, String username, String password) {
         db.collection("credentials_worker")
                 .whereEqualTo("Username", username)
-                .get()
+                .get(com.google.firebase.firestore.Source.SERVER)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && !task.getResult().isEmpty()) {
                         boolean valid = false;
@@ -304,6 +364,7 @@ public class LoginActivity extends Activity {
                                     .edit()
                                     .putBoolean("isAdmin", false)
                                     .putString("logged_in_username", username)
+                                    .putLong("login_timestamp", System.currentTimeMillis())
                                     .apply();
 
                             // Success animation
