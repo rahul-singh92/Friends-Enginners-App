@@ -2,12 +2,16 @@ package com.jitendersingh.friendsengineer;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,6 +29,7 @@ public class MessageActivity extends BaseActivity {
     private RecyclerView recyclerView;
     private EditText inputMessage;
     private LinearLayout sendButton, backButton;
+    private View rootLayout;
 
     private FirebaseFirestore db;
     private ListenerRegistration messagesListener;
@@ -39,18 +44,40 @@ public class MessageActivity extends BaseActivity {
 
         applyEdgeToEdge(R.id.root_layout);
 
+        // Still request adjustResize as a baseline for older/edge cases,
+        // even though the real push-up work below is what actually
+        // handles it since edge-to-edge disables automatic resize.
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
         // Hide action bar
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
 
         // Initialize views
+        rootLayout = findViewById(R.id.root_layout);
         recyclerView = findViewById(R.id.recycler_messages);
         inputMessage = findViewById(R.id.edit_message);
         sendButton = findViewById(R.id.button_send);
         backButton = findViewById(R.id.backButton);
 
         db = FirebaseFirestore.getInstance();
+
+        // Push content up above the keyboard. applyEdgeToEdge() makes this
+        // window edge-to-edge, which disables Android's normal automatic
+        // resize-around-keyboard behavior — so we measure the IME (keyboard)
+        // inset ourselves and apply it as bottom padding on the root layout.
+        ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
+            int imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
+            int navBarHeight = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+
+            // When the keyboard is up, imeHeight already accounts for the
+            // nav bar being covered, so just use whichever is larger.
+            int bottomPadding = Math.max(imeHeight, navBarHeight);
+
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottomPadding);
+            return insets;
+        });
 
         // Back button handler
         backButton.setOnClickListener(v -> finish());
